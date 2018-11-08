@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/list_img_chose"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#424242"
+    android:clipToPadding="false"
+    android:fadingEdge="none"
+    android:paddingBottom="@dimen/list_item_spacing_half"
+    android:paddingTop="@dimen/list_item_spacing_half"
+    tools:context=".ItemList_img_choose"
+    tools:listitem="@layout/fragment_item_list_dialog_item" />

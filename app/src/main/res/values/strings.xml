@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <string name="app_name">trip_recorder_3</string>
+    <string name="title_01">WHERE</string>
+    <string name="title_02">WERE</string>
+    <string name="title_03">W\u2191E</string>
+    <string name="title_03_re">M\u2193E</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="my_trace">My Trace</string>
+    <string name="create_new">CREATE New TRIP</string>
+    <string name="card_editClk">Edit</string>
+
+</resources>

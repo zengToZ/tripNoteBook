@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="trip_recorder_theme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">?attr/colorAccent</item>
+        <item name="android:colorBackground">@color/background_material_light</item>
+        <item name="android:navigationBarColor">?android:attr/colorPressedHighlight</item>
+    </style>
+
+    <style name="Theme_light_no_ActionBar" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="light_material" parent="android:Theme.Material.Light" />
+
+    <style name="DayNight" parent="Theme.AppCompat.DayNight">
+        <item name="android:navigationBarColor">@color/Grey_02</item>
+        <item name="android:statusBarColor">@color/Grey_02</item>
+        <item name="colorPrimaryDark">@color/Grey_02</item>
+        <item name="android:colorBackground">@color/white</item>
+    </style>
+</resources>
