@@ -37,10 +37,6 @@ public class staticGlobal {
     *
      */
 
-    // "content://com.android.providers.media.documents/document/image%3A717724"
-    final public static String defaultImgStr = "content://com.android.providers.media.documents/document/image%3A717724";
-
-    public static boolean needUpdate_triplist = true;
 
     public static String getJson(Context context, String fileName){
         StringBuilder stringBuilder = new StringBuilder();

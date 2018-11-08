@@ -161,7 +161,6 @@ public class Activity_Triplist extends AppCompatActivity {
                         }
                         if(name.length()>=14)
                             t.dateTitle = name.substring(name.length()-10,name.length());
-                        //t.background = Uri.parse(staticGlobal.defaultImgStr);
                         cardList.add(t);
 
                         jsonReader.endObject();
