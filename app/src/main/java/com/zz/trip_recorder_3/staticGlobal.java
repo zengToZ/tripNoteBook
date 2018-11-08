@@ -19,7 +19,11 @@ import java.util.Date;
 import com.zz.trip_recorder_3.tools.iniHelper_tools;
 
 public class staticGlobal {
-    private static File iniFile = new File(Environment.getExternalStorageDirectory().toString()+"/trip_recorder_setting.ini");
+    public static Context context;
+    public static File fDir;
+    //private static File iniFile = new File(Environment.getExternalStorageDirectory().toString()+"/trip_recorder_setting.ini");
+    final private static File iniFile = new File(fDir, "settings.tn");
+
     final private static String TAG = "thisOne";
 
     /*
@@ -59,7 +63,7 @@ public class staticGlobal {
     }
 
     public static String getTripJsonName(int tripID) {
-        return "tr"+Integer.toString(tripID)+".json";
+        return "tn_"+Integer.toString(tripID)+".json";
     }
 
     // convert 1 digit 0-9 to 00-09
@@ -94,26 +98,26 @@ public class staticGlobal {
 
     public static void initializeIniFile() {
         try{
-            if(!iniFile.exists()) {
-                if (iniFile.createNewFile()){
-                    iniHelper_tools currentIniFile = new iniHelper_tools(iniFile);
-                    currentIniFile.setLineSeparator("|");
-                    currentIniFile.set("Global Setting","isNewTripOpen","false");
-                    currentIniFile.set("Global Setting","tripCount",0);
-                    currentIniFile.set("Global Setting","currentTripID",100); // start with 101
-                    currentIniFile.set("Global Setting","currentShownTripID",-1); //currentShownTripID
-                    currentIniFile.set("Global Setting","currentEditorID","");  // current editting one
-                    currentIniFile.save();
-                }
+            File ff = context.getFileStreamPath(iniFile.getName());
+            if(!ff.exists()) {
+                iniHelper_tools currentIniFile = new iniHelper_tools(iniFile,context);
+                currentIniFile.setLineSeparator("|");
+                currentIniFile.set("Global Setting","isNewTripOpen","false");
+                currentIniFile.set("Global Setting","tripCount",0);
+                currentIniFile.set("Global Setting","currentTripID",100); // start with 101
+                currentIniFile.set("Global Setting","currentShownTripID",-1); //currentShownTripID
+                currentIniFile.set("Global Setting","currentEditorID","");  // current editting one
+                currentIniFile.save();
             }
-        }catch (IOException e){
+        }catch (Exception e){
             Log.i(TAG,e.toString());
         }
     }
 
     public static boolean deleteIniFile() throws IOException{
-        if (iniFile.exists()){
-            iniFile.delete();
+        File ff = context.getFileStreamPath(iniFile.getName());
+        if(!ff.exists()) {
+            context.deleteFile(iniFile.getName());
             return true;
         }
         else return false;
@@ -128,69 +132,65 @@ public class staticGlobal {
     }
 
     public static boolean isNewTripOpened() throws IOException{
-        iniHelper_tools INI = new iniHelper_tools(iniFile);
+        iniHelper_tools INI = new iniHelper_tools(iniFile, context);
         return Boolean.parseBoolean((String) INI.get("Global Setting", "isNewTripOpen"));
     }
 
     public static void setIsNewTripOpened(String bool){
-        if (iniFile.exists()) {
-            iniHelper_tools INI = new iniHelper_tools(iniFile);
-            INI.setLineSeparator("|");
-            if ((bool.equals("True")) || (bool.equals("true")) || (bool.equals("TRUE"))) {
-                INI.set("Global Setting","isNewTripOpen","true");
-            }
-            else if((bool.equals("False")) || (bool.equals("false")) || (bool.equals("FALSE"))){
-                INI.set("Global Setting","isNewTripOpen","false");
-            }
-            INI.save();
+        iniHelper_tools INI = new iniHelper_tools(iniFile, context);
+        INI.setLineSeparator("|");
+        if ((bool.equals("True")) || (bool.equals("true")) || (bool.equals("TRUE"))) {
+            INI.set("Global Setting","isNewTripOpen","true");
         }
+        else if((bool.equals("False")) || (bool.equals("false")) || (bool.equals("FALSE"))){
+            INI.set("Global Setting","isNewTripOpen","false");
+        }
+        INI.save();
     }
 
     public static void addTripCount(int c){
-        if (iniFile.exists()) {
-            iniHelper_tools INI = new iniHelper_tools(iniFile);
-            int oc = Integer.parseInt((String) INI.get("Global Setting", "tripCount"));
-            int currID = Integer.parseInt((String)INI.get("Global Setting","currentTripID"));
-            oc = oc + c;
-            if(c>=0)
-                currID = currID + c;
-            INI.setLineSeparator("|");
-            INI.set("Global Setting","tripCount",(Object)oc);
-            INI.set("Global Setting","currentTripID",(Object)currID);
-            INI.save();
-        }
+        iniHelper_tools INI = new iniHelper_tools(iniFile, context);
+        int oc = Integer.parseInt((String) INI.get("Global Setting", "tripCount"));
+        int currID = Integer.parseInt((String)INI.get("Global Setting","currentTripID"));
+        oc = oc + c;
+        if(c>=0)
+            currID = currID + c;
+        INI.setLineSeparator("|");
+        INI.set("Global Setting","tripCount",(Object)oc);
+        INI.set("Global Setting","currentTripID",(Object)currID);
+        INI.save();
     }
      public static int getTripCount(){
-         iniHelper_tools INI = new iniHelper_tools(iniFile);
+         iniHelper_tools INI = new iniHelper_tools(iniFile, context);
          return Integer.parseInt((String)INI.get("Global Setting","tripCount"));
      }
 
     public static int getCurrTripID(){
-        iniHelper_tools INI = new iniHelper_tools(iniFile);
+        iniHelper_tools INI = new iniHelper_tools(iniFile,context);
         return Integer.parseInt((String)INI.get("Global Setting","currentTripID"));
     }
 
     public static void setCurrShowingTripID(int i){
-        iniHelper_tools INI = new iniHelper_tools(iniFile);
+        iniHelper_tools INI = new iniHelper_tools(iniFile,context);
         INI.setLineSeparator("|");
         INI.set("Global Setting","currentShownTripID",i);
         INI.save();
     }
 
     public static int getCurrShowingTripID(){
-        iniHelper_tools INI = new iniHelper_tools(iniFile);
+        iniHelper_tools INI = new iniHelper_tools(iniFile,context);
         return Integer.parseInt((String) INI.get("Global Setting","currentShownTripID"));
     }
 
     public static void setCurrEditorID(String s){
-        iniHelper_tools INI = new iniHelper_tools(iniFile);
+        iniHelper_tools INI = new iniHelper_tools(iniFile,context);
         INI.setLineSeparator("|");
         INI.set("Global Setting","currentEditorID",s);
         INI.save();
     }
 
     public static String getCurrEditorID(){
-        iniHelper_tools INI = new iniHelper_tools(iniFile);
+        iniHelper_tools INI = new iniHelper_tools(iniFile, context);
         return (String)INI.get("Global Setting","currentEditorID");
     }
 

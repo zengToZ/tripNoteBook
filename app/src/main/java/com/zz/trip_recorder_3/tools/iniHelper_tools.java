@@ -1,9 +1,13 @@
 package com.zz.trip_recorder_3.tools;
 
+import android.content.Context;
+
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
         import java.io.BufferedWriter;
         import java.io.File;
-        import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
         import java.io.FileReader;
         import java.io.FileWriter;
         import java.io.IOException;
@@ -15,6 +19,8 @@ import java.io.BufferedReader;
         import java.util.LinkedHashMap;
         import java.util.Map;
         import java.util.regex.Pattern;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class iniHelper_tools {
 
@@ -111,6 +117,7 @@ public class iniHelper_tools {
 
     // current file object
     private File file = null;
+    private Context context = null;
 
     public iniHelper_tools(){
 
@@ -118,6 +125,12 @@ public class iniHelper_tools {
 
     public iniHelper_tools(File file) {
         this.file = file;
+        initFromFile(file);
+    }
+
+    public iniHelper_tools(File file, Context context) {
+        this.file = file;
+        this.context = context;
         initFromFile(file);
     }
 
@@ -129,9 +142,19 @@ public class iniHelper_tools {
 
     // save to file
     public void save(File file){
+        BufferedWriter bufferedWriter;
         try {
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file));
+            if(context!=null){
+                OutputStream outputStream = context.openFileOutput(file.getName(), MODE_PRIVATE);
+                bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
+                //outputStream.close();
+            }
+            else {
+                bufferedWriter = new BufferedWriter(new FileWriter(file));
+            }
+
             saveConfig(bufferedWriter);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -146,7 +169,14 @@ public class iniHelper_tools {
     private void initFromFile(File file) {
         BufferedReader bufferedReader;
         try {
-            bufferedReader = new BufferedReader(new FileReader(file));
+            if(context!=null){
+                FileInputStream inputStream = context.openFileInput(file.getName());
+                bufferedReader = new BufferedReader(new InputStreamReader(new BufferedInputStream(inputStream)));
+            }
+            else{
+                bufferedReader = new BufferedReader(new FileReader(file));
+            }
+
             toIniFile(bufferedReader);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

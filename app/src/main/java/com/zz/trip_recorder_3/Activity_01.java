@@ -2,6 +2,7 @@ package com.zz.trip_recorder_3;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -65,9 +66,10 @@ public class Activity_01 extends AppCompatActivity implements
         actionBar.hide();
         setContentView(R.layout.activity_01);
 
-        // for debug use
+        // for initialising
+        staticGlobal.fDir = getApplication().getBaseContext().getFilesDir();
+        staticGlobal.context = this;
         staticGlobal.initializeIniFile();
-        //File file; for(int i=100;i<200;i++){file = new File(getApplication().getBaseContext().getFilesDir(), staticGlobal.getTripJsonName(i));if(file.exists()){file.delete(); } }
 
         /***---check all permissions--***/
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
