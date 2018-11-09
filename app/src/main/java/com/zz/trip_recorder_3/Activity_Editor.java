@@ -182,13 +182,6 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
             }catch (Exception e){
                 Log.i(TAG, "Viewer error at reading Json file: "+ e.toString());
             }
-
-            // add space at bottom
-            LinearLayout linearLayout = findViewById(R.id.draft_lilayout);
-            Space space = new Space(this);
-            space.setMinimumHeight(120);
-            space.setMinimumWidth(LinearLayout.LayoutParams.MATCH_PARENT);
-            linearLayout.addView(space,-1);
         }
         else {
             // get date picker and pick date for title
@@ -493,9 +486,9 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
             }
 
             String s = position_content.remove(j);
-
             if(s!=null){
-                position_content.put(j+1,s);
+                String[] ss = staticGlobal.parseViewItem(s);
+                position_content.put(j+1,ss[0]+" "+Integer.toString(Integer.parseInt(ss[1]+1)));
             }
         }
     }

@@ -211,7 +211,6 @@ public class staticGlobal {
         if (uri.getAuthority() != null) {
             try {
                 is = context.getContentResolver().openInputStream(uri);
-
                 Bitmap bmp = BitmapFactory.decodeStream(is);
                 return writeToTempImageAndGetPathUri(context, bmp);
             } catch (FileNotFoundException e) {
@@ -234,7 +233,7 @@ public class staticGlobal {
         return Uri.parse(path);
     }
 
-    /*
+/*
     // get Uri localized
     public static Uri getImageUriLocalized(Context context, Uri uri){
         FileChannel source = null;
@@ -278,6 +277,38 @@ public class staticGlobal {
         cursor.moveToFirst();
         return cursor.getString(column_index);
     }
-    */
+
+    public static File bmpToFile(){
+        FileOutputStream fos = null;
+        try {
+            //create a file to write bitmap data
+            File f = new File(context.getCacheDir(), filename);
+            f.createNewFile();
+
+            //Convert bitmap to byte array
+            Bitmap bitmap = your bitmap;
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*//*, bos);
+            byte[] bitmapdata = bos.toByteArray();
+
+            //write the bytes in file
+            fos = new FileOutputStream(f);
+            fos.write(bitmapdata);
+
+        }catch (IOException e){
+            Log.i(TAG,"static global bmp to file(1): "+e.toString());
+        }
+        finally {
+            try{
+            fos.flush();
+            fos.close();
+            }catch (Exception e){
+                Log.i(TAG,"static global bmp to file(2): "+e.toString());
+            }
+
+        }
+    }
+*/
+
 
 }
