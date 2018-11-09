@@ -12,5 +12,11 @@
     <string name="my_trace">My Trace</string>
     <string name="create_new">CREATE New TRIP</string>
     <string name="card_editClk">Edit</string>
+    <string-array name="editor_insertion_select">
+        <item>Text</item>
+        <item>Image</item>
+        <item>Audio</item>
+        <item>Video</item>
+    </string-array>
 
 </resources>
