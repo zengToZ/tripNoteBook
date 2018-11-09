@@ -1,5 +1,6 @@
 package com.zz.trip_recorder_3;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -28,6 +29,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,6 +65,10 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     private int parentID    = 0;
     private String unitID   = "";
 
+    private static int insertId = 0;
+
+    private static boolean isInsert = false;
+
     final private static String TAG = "thisOne";
 
     private String pickedDate;
@@ -80,8 +86,8 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     private static final int PICK_VIDEO     = 4;
 
     // set static title for bottom fragment
-    final String[] cameraTitle = {"Take a New Photo", "Open Galleary"};
-    final String[] videoTitle = {"Record a New Video", "Open Galleary"};
+    final private String[] cameraTitle = {"Take a New Photo", "Open Galleary"};
+    final private String[] videoTitle = {"Record a New Video", "Open Galleary"};
 
     private Map<Integer,String> position_content;
     private Map<String,EditText> textMap;
@@ -177,6 +183,12 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                 Log.i(TAG, "Viewer error at reading Json file: "+ e.toString());
             }
 
+            // add space at bottom
+            LinearLayout linearLayout = findViewById(R.id.draft_lilayout);
+            Space space = new Space(this);
+            space.setMinimumHeight(120);
+            space.setMinimumWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+            linearLayout.addView(space,-1);
         }
         else {
             // get date picker and pick date for title
@@ -234,7 +246,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         img3.setOnClickListener(new ImageView.OnClickListener(){
             @Override
             public void onClick(View v1) {
-                addText("text "+Integer.toString(COUNT),null,true);
+                addText("text "+Integer.toString(COUNT),null,true); // addText itemName text 0
             }
         });
 
@@ -242,7 +254,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         img4.setOnClickListener(new ImageView.OnClickListener(){
             @Override
             public void onClick(View v1) {
-                ItemList_img_choose.newInstance(2,cameraTitle).show(getSupportFragmentManager(), "dialog");// new instance = 2 is 1.Camera 2.Gallery
+                ItemList_img_choose.newInstance(2,cameraTitle, COUNT).show(getSupportFragmentManager(), "dialog");// new instance = 2 is 1.Camera 2.Gallery
                 mediaType = mediaTypes.camera;
             }
         });
@@ -251,7 +263,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         img5.setOnClickListener(new ImageView.OnClickListener(){
             @Override
             public void onClick(View v1) {
-                ItemList_img_choose.newInstance(2,videoTitle).show(getSupportFragmentManager(), "dialog");
+                ItemList_img_choose.newInstance(2,videoTitle, COUNT).show(getSupportFragmentManager(), "dialog");
                 mediaType = mediaTypes.video;
             }
         });
@@ -260,7 +272,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     }
 
     /** 1. add text **/
-    private void addText(String itemName, String itemContent, boolean isEmpty){
+    private void addText(final String itemName, String itemContent, boolean isEmpty){
         try{
         EditText newText = new EditText(Activity_Editor.this);
         if(!isEmpty)
@@ -283,7 +295,21 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         linearLayout.addView(newText,thislayout);
         textMap.put(itemName,newText);
         position_content.put(COUNT,itemName);
-        Log.i(TAG, "New Text Box added as (global count "+ Integer.toString(COUNT)+": "+itemName);
+
+        // view separator, able to insert views
+        ImageView separator = new ImageView(Activity_Editor.this);
+        separator.setBackgroundResource(R.mipmap.separator);
+        separator.setOnClickListener(new ImageView.OnClickListener(){
+            @Override
+            public void onClick(View v1) {
+                //createDlgOnInsertion(insertionID);
+            }
+        });
+        LinearLayout.LayoutParams slayout = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 50);
+        linearLayout.addView(separator, slayout);
+
+
+            Log.i(TAG, "New Text Box added as (global count "+ Integer.toString(COUNT)+": "+itemName);
         COUNT++;
         }
         catch (Exception e){
@@ -313,7 +339,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                 Uri photoURI = FileProvider.getUriForFile(Activity_Editor.this,
                         "com.zz.trip_recorder_3.fileprovider",
                         photoFile);
-                this.CurrentPhotoUri = photoURI;
+                CurrentPhotoUri = photoURI;
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 //setResult(RESULT_OK,takePictureIntent);
                 startActivityForResult(takePictureIntent, TAKE_PHOTO);
@@ -325,16 +351,13 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
+        String imageFileName = "JPEG_" + timeStamp;
+        File storageDir = new File(getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),staticGlobal.imgFolder);
+        //File image = File.createTempFile( imageFileName,".jpg",storageDir);
+        File image = new File(storageDir,imageFileName+".jpg");
 
         // Save a file: path for use with ACTION_VIEW intents
-        this.CurrentPhotoPath = image.getAbsolutePath();
+        //this.CurrentPhotoPath = image.getAbsolutePath();
         return image;
     }
     // Add img to linear layout
@@ -377,7 +400,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         }
     }*/
 
-    private void addImg(String itemName, Uri imgUri){
+    private void addImg(final String itemName, Uri imgUri){
         try {
             if (imgUri != null) {
                 if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M)
@@ -394,14 +417,26 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
 
                 ImageView newImg = new ImageView(Activity_Editor.this);
                 newImg.setImageBitmap(bitmap);
-                //newImg.setImageURI(imgUri);
                 LinearLayout linearLayout = this.findViewById(R.id.draft_lilayout);
                 LinearLayout.LayoutParams thislayout = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 600);
-                linearLayout.addView(newImg, thislayout);
-                imgMap.put(itemName, imgUri);
-                position_content.put(COUNT,itemName);
+
+                if(isInsert){
+                    linearLayout.addView(newImg, 2*(insertId+1), thislayout);   // 2 * due to separator take odd number position, views are at even number position
+                    createSeparator(itemName,2*(insertId+1)+1);
+                    insertArrMap(insertId);
+                    imgMap.put(itemName, imgUri);
+                    position_content.put(insertId+1,itemName);
+                }
+                else{
+                    linearLayout.addView(newImg, -1, thislayout);
+                    createSeparator(itemName,-1);
+                    imgMap.put(itemName, imgUri);
+                    position_content.put(COUNT,itemName);
+                }
+
                 Log.i(TAG,"New Image Added as (global count "+ Integer.toString(COUNT)+": "+itemName);
                 COUNT++;
+                isInsert = false;
             }
         }catch (Exception e){
             Toast.makeText(this, "Error:" + e.toString(), Toast.LENGTH_LONG).show();
@@ -410,11 +445,12 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
 
     // Open gallery
     private void openGallery(){
+        //Intent intent = new Intent(Intent.ACTION_PICK);
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        //setResult(RESULT_OK,intent);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
+        startActivityForResult(Intent.createChooser(intent.setFlags(Intent
+                .FLAG_GRANT_READ_URI_PERMISSION), "Select Picture"), PICK_IMAGE);
         Log.i(TAG,"Gallery Opened");
     }
 
@@ -423,17 +459,60 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
 
     /** 4. add video **/
 
+    /**create separator for each view added**/
+    private void createSeparator(String itemName, int position){
+        final String[] line = staticGlobal.parseViewItem(itemName);
+        // view separator, able to insert views
+        ImageView separator = new ImageView(Activity_Editor.this);
+        separator.setOnClickListener(new ImageView.OnClickListener(){
+            final int insertID = Integer.parseInt(line[1]); // id for Insertion marking
+            @Override
+            public void onClick(View v1) {
+                createDlgOnInsertion(insertID);
+            }
+        });
+        separator.setBackgroundResource(R.mipmap.separator);
+        LinearLayout linearLayout = this.findViewById(R.id.draft_lilayout);
+        LinearLayout.LayoutParams slayout = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 50);
+        linearLayout.addView(separator, position, slayout);
+    }
+
+
+
+    /**update all map when inserting views**/
+    private void insertArrMap(int id){
+        for(int j=COUNT;j>id;j--){
+            EditText tv = textMap.remove("text "+Integer.toString(j));
+            if(tv!=null){
+                textMap.put("text "+Integer.toString(j+1),tv);
+            }
+
+            Uri u = imgMap.remove("img "+Integer.toString(j));
+            if(u!=null){
+                imgMap.put("img "+Integer.toString(j+1),u);
+            }
+
+            String s = position_content.remove(j);
+
+            if(s!=null){
+                position_content.put(j+1,s);
+            }
+        }
+    }
+
+
 
     /**Detect clicks**/
-    public void onItemClicked(int position){
+    public void onItemClicked(int position, int id){
+        insertId = id;
         switch (position){
             case 0:
                 if(mediaType==mediaTypes.camera) dispatchTakePictureIntent();
-                else if(mediaType==mediaType.video){}
+                else if(mediaType==mediaTypes.video){}
                 break;
             case 1:
                 if(mediaType==mediaTypes.camera) openGallery();
-                else if(mediaType==mediaType.video){}
+                else if(mediaType==mediaTypes.video){}
                 break;
         }
     }
@@ -441,14 +520,15 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != RESULT_OK) { return; }
-        // Toast.makeText(this, "Error:" + CurrentPhotoUri.toString(), Toast.LENGTH_LONG).show();
         switch (requestCode){
             case TAKE_PHOTO:
-                addImg("img "+Integer.toString(COUNT),CurrentPhotoUri);
+                addImg("img "+Integer.toString(insertId+1),CurrentPhotoUri);    // addImg itemName img 0
                 break;
             case PICK_IMAGE:
-                this.CurrentPhotoUri = data.getData();
-                addImg("img "+Integer.toString(COUNT),CurrentPhotoUri);
+                CurrentPhotoUri = staticGlobal.getImageUrlWithAuthority(getApplication().getBaseContext(),data.getData());
+                //CurrentPhotoUri = staticGlobal.getImageUrlWithAuthority(getApplication().getBaseContext(), data.getData());
+                //CurrentPhotoUri = data.getData();
+                addImg("img "+Integer.toString(insertId+1),CurrentPhotoUri);    // addImg itemName img 0
                 break;
         }
     }
@@ -481,6 +561,32 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     @Override
     public void onBackPressed(){
         createQuitDlg("Just a Second","Do you want to save the record you just type in?");
+    }
+
+    private void createDlgOnInsertion(int id){
+        final int para = id;
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Insert")
+                .setItems(R.array.editor_insertion_select, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case 0:
+
+                                break;
+                            case 1:
+                                ItemList_img_choose.newInstance(2,cameraTitle, para).show(getSupportFragmentManager(), "dialog");// new instance = 2 is 1.Camera 2.Gallery
+                                mediaType = mediaTypes.camera;
+                                isInsert = true;
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                break;
+                        }
+                    }
+                });
+        builder.create();
+        builder.show();
     }
 
     // create quit alert box: save, leave without saving, cancel
@@ -591,7 +697,8 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                     }
                 }
             }
-            // generate random background for unit view
+
+            // generate background for whole package display
             String unit_bg = "";
             if(imgMap.size()>0 && imgUri!=null){
                 jsonStringer.key("unit_bg");
@@ -614,6 +721,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
             outputStream.write(newJsonObject.toString().getBytes());
             Log.i(TAG, "New saved Json: " + newJsonObject.toString(1));
             outputStream.close();
+            COUNT = 0;
         }catch (Exception e){
             Log.i(TAG,e.toString());
         }

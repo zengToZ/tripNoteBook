@@ -26,14 +26,16 @@ public class ItemList_img_choose extends BottomSheetDialogFragment {
     private static final String ARG_ITEM_COUNT = "item_count";
     private Listener mListener;
     private static String[] showingTitles;
+    public static int id;   // id for Insertion marking
 
     // TODO: Customize parameters
-    public static ItemList_img_choose newInstance(int itemCount, String[] titles) {
+    public static ItemList_img_choose newInstance(int itemCount, String[] titles, int para) {
         final ItemList_img_choose fragment = new ItemList_img_choose();
         final Bundle args = new Bundle();
         args.putInt(ARG_ITEM_COUNT, itemCount);
         fragment.setArguments(args);
         showingTitles = titles;
+        id = para;  // id for Insertion marking
 
         return fragment;
     }
@@ -70,12 +72,13 @@ public class ItemList_img_choose extends BottomSheetDialogFragment {
     }
 
     public interface Listener {
-        void onItemClicked(int position);
+        void onItemClicked(int position, int id);   // id for Insertion marking
     }
 
     private class ViewHolder extends RecyclerView.ViewHolder {
 
         final TextView text;
+        final int para = ItemList_img_choose.id;    // id for Insertion marking
 
         ViewHolder(LayoutInflater inflater, ViewGroup parent) {
             // TODO: Customize the item layout
@@ -85,7 +88,7 @@ public class ItemList_img_choose extends BottomSheetDialogFragment {
                 @Override
                 public void onClick(View v) {
                     if (mListener != null) {
-                        mListener.onItemClicked(getAdapterPosition());
+                        mListener.onItemClicked(getAdapterPosition(), para);    // id for Insertion marking, back to Activity editor by para
                         dismiss();
                     }
                 }

@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -144,7 +145,13 @@ public class Activity_Viewer extends AppCompatActivity {
             }
         });
         LinearLayout.LayoutParams thislayout = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        linearLayout.addView(btn,thislayout);
+        linearLayout.addView(btn,-1,thislayout);
+
+        // add some space between views
+        Space space = new Space(this);
+        space.setMinimumHeight(100);
+        space.setMinimumWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+        linearLayout.addView(space,-1);
     }
 
     // create text
@@ -157,7 +164,13 @@ public class Activity_Viewer extends AppCompatActivity {
             newText.setRawInputType(InputType.TYPE_NULL);
             newText.setTextIsSelectable(true);
             newText.setPaintFlags(0);
-            linearLayout.addView(newText);
+            linearLayout.addView(newText,-1);
+
+            // add some space between views
+            Space space = new Space(this);
+            space.setMinimumHeight(8);
+            space.setMinimumWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+            linearLayout.addView(space,-1);
             Log.i(TAG, "Text view added");
         }
         catch (Exception e){
@@ -198,7 +211,13 @@ public class Activity_Viewer extends AppCompatActivity {
                 });
 
                 LinearLayout.LayoutParams thislayout = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-                linearLayout.addView(newImg, thislayout);
+                linearLayout.addView(newImg,-1, thislayout);
+
+                // add some space between views
+                Space space = new Space(this);
+                space.setMinimumHeight(8);
+                space.setMinimumWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+                linearLayout.addView(space,-1);
                 Log.i(TAG,"Image view added");
             }
         }catch (Exception e){

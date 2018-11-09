@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.BottomNavigationView;
@@ -21,6 +22,8 @@ import android.widget.TextView;
 import android.app.FragmentManager;
 
 import java.io.File;
+
+import static android.os.Environment.getExternalStoragePublicDirectory;
 
 public class Activity_01 extends AppCompatActivity implements
         Fragment1.OnFragmentInteractionListener,
@@ -90,6 +93,17 @@ public class Activity_01 extends AppCompatActivity implements
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                         REQUEST_CODE);
             }
+
+            if (checkSelfPermission(Manifest.permission.ACCESS_WIFI_STATE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_WIFI_STATE},
+                        REQUEST_CODE);
+            }
+        }
+
+        File newDir = new File(getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),staticGlobal.imgFolder);
+        if (!newDir.exists()) {
+            newDir.mkdirs();
         }
 
         //mTextMessage = (TextView) findViewById(R.id.message);

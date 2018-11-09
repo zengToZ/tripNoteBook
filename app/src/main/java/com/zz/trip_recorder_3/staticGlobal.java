@@ -1,22 +1,35 @@
 package com.zz.trip_recorder_3;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.util.JsonReader;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 import com.zz.trip_recorder_3.tools.iniHelper_tools;
+
+import static android.os.Environment.getExternalStoragePublicDirectory;
 
 public class staticGlobal {
     public static Context context;
@@ -25,6 +38,8 @@ public class staticGlobal {
     final private static File iniFile = new File(fDir, "settings.tn");
 
     final private static String TAG = "thisOne";
+
+    final public static String imgFolder = "tripNoteBook";
 
     /*
     * ini attribute:
@@ -189,5 +204,80 @@ public class staticGlobal {
         iniHelper_tools INI = new iniHelper_tools(iniFile, context);
         return (String)INI.get("Global Setting","currentEditorID");
     }
+
+    public static Uri getImageUrlWithAuthority(Context context, Uri uri) {
+        InputStream is = null;
+        OutputStream os = null;
+        if (uri.getAuthority() != null) {
+            try {
+                is = context.getContentResolver().openInputStream(uri);
+
+                Bitmap bmp = BitmapFactory.decodeStream(is);
+                return writeToTempImageAndGetPathUri(context, bmp);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }finally {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static Uri writeToTempImageAndGetPathUri(Context inContext, Bitmap inImage) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
+        return Uri.parse(path);
+    }
+
+    /*
+    // get Uri localized
+    public static Uri getImageUriLocalized(Context context, Uri uri){
+        FileChannel source = null;
+        FileChannel destination = null;
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp +"_tmp.jpg";
+        if(uri.getAuthority()!=null){
+            try{
+                File sFile = new File(getRealPathFromURI(context,uri));
+                File dFile = new File(getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString()+"/"+imgFolder,imageFileName);
+
+                if(!dFile.exists()){
+                    dFile.createNewFile();
+                }
+
+                source = new FileInputStream(sFile).getChannel();
+                destination = new FileOutputStream(dFile).getChannel();
+
+                destination.transferFrom(source,0,source.size());
+
+                return Uri.parse(dFile.getPath());
+            }catch (Exception e){
+                Log.i(TAG, "static global get uri(1):"+e.toString());
+            }finally {
+                try{
+                    source.close();
+                    destination.close();
+                }catch (Exception e){
+                    Log.i(TAG, "static global get uri(2):"+e.toString());
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String getRealPathFromURI(Context context, Uri contentUri) {
+
+        String[] proj = { MediaStore.Images.Media.DATA };
+        Cursor cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
+    }
+    */
 
 }
