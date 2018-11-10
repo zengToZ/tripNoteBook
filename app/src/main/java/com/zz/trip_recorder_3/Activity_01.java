@@ -1,25 +1,18 @@
 package com.zz.trip_recorder_3;
 
-import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.BottomNavigationView;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
-import android.app.FragmentManager;
 
 import java.io.File;
 
@@ -33,7 +26,19 @@ public class Activity_01 extends AppCompatActivity implements
     //private TextView mTextMessage;
     //private android.support.v4.app.Fragment frag;
 
-    private static int REQUEST_CODE=1;
+    /*final private static int REQUEST_CODE_1=0xa1;
+    final private static int REQUEST_CODE_2=0xa2;
+    final private static int REQUEST_CODE_3=0xa3;
+    final private static int REQUEST_CODE_4=0xa4;*/
+
+    final private static int REQUEST_ALL = 0xa1;
+    final private String[] PERMISSIONS = {
+            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+            android.Manifest.permission.ACCESS_WIFI_STATE
+    };
+
     final private static String TAG = "thisOne";
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -76,28 +81,8 @@ public class Activity_01 extends AppCompatActivity implements
 
         /***---check all permissions--***/
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            if (checkSelfPermission(Manifest.permission.CAMERA)
-                    != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.CAMERA},
-                        REQUEST_CODE);
-            }
-
-            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_CODE);
-            }
-
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        REQUEST_CODE);
-            }
-
-            if (checkSelfPermission(Manifest.permission.ACCESS_WIFI_STATE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_WIFI_STATE},
-                        REQUEST_CODE);
+            if(!hasPermissions(this, PERMISSIONS)){
+                ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_ALL);
             }
         }
 
@@ -112,6 +97,18 @@ public class Activity_01 extends AppCompatActivity implements
 
         Fragment1 frag = new Fragment1();
         getSupportFragmentManager().beginTransaction().add(R.id.main_container,frag).commit();
+    }
+
+    // check permission since Android M version
+    public static boolean hasPermissions(Context context, String... permissions) {
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
