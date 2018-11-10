@@ -1,40 +1,27 @@
 package com.zz.trip_recorder_3;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 
 import com.zz.trip_recorder_3.adapter.tripCardAdapter;
-import com.zz.trip_recorder_3.data_models.frag2CardModel;
 import com.zz.trip_recorder_3.data_models.tripCardModel;
 
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -16,8 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.support.v7.app.AppCompatActivity;
 
 import com.zz.trip_recorder_3.adapter.cardAdapter;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;
@@ -25,7 +23,6 @@ import com.zz.trip_recorder_3.data_models.frag2CardModel;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 

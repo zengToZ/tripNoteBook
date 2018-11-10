@@ -23,14 +23,6 @@ public class Activity_01 extends AppCompatActivity implements
         Fragment2.OnFragmentInteractionListener,
         Fragment3.OnFragmentInteractionListener{
 
-    //private TextView mTextMessage;
-    //private android.support.v4.app.Fragment frag;
-
-    /*final private static int REQUEST_CODE_1=0xa1;
-    final private static int REQUEST_CODE_2=0xa2;
-    final private static int REQUEST_CODE_3=0xa3;
-    final private static int REQUEST_CODE_4=0xa4;*/
-
     final private static int REQUEST_ALL = 0xa1;
     final private String[] PERMISSIONS = {
             android.Manifest.permission.CAMERA,

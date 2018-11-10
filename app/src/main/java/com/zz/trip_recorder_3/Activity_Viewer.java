@@ -2,7 +2,6 @@ package com.zz.trip_recorder_3;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -11,14 +10,11 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
-import android.text.method.ScrollingMovementMethod;
 import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -28,7 +24,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zz.trip_recorder_3.ExtraViewer.ImageViewer;
-import com.zz.trip_recorder_3.data_models.tripCardModel;
 import com.zz.trip_recorder_3.tools.recorder_tools;
 
 import org.json.JSONException;

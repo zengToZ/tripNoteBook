@@ -1,15 +1,9 @@
 package com.zz.trip_recorder_3.adapter;
 
-import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.Build;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.TypedValue;
@@ -18,9 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.zz.trip_recorder_3.Activity_01;
 import com.zz.trip_recorder_3.R;
-import com.zz.trip_recorder_3.staticGlobal;
 import com.zz.trip_recorder_3.tools.recorder_tools;
 import com.zz.trip_recorder_3.view_holders.frag2ViewHolder;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;

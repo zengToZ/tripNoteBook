@@ -1,34 +1,24 @@
 package com.zz.trip_recorder_3;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
 import com.zz.trip_recorder_3.adapter.cardAdapter;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;
-import com.zz.trip_recorder_3.tools.recorder_tools;
 
 import org.json.JSONObject;
 

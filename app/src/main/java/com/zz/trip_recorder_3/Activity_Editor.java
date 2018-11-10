@@ -1,6 +1,5 @@
 package com.zz.trip_recorder_3;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -29,20 +28,16 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
-import java.util.Random;
 
 import com.zz.trip_recorder_3.tools.recorder_tools;
 
