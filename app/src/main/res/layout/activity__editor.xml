@@ -17,6 +17,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <EditText
         android:id="@+id/draft_title"
         android:layout_width="0dp"
@@ -36,8 +46,6 @@
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
         android:layout_height="28dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
         android:gravity="bottom"
         android:orientation="horizontal"
         android:visibility="visible"
@@ -87,9 +95,10 @@
     </LinearLayout>
 
     <ScrollView
+        android:id="@+id/editor_scroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintBottom_toTopOf="@+id/divider2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/divider">
@@ -99,7 +108,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            android:orientation="vertical"></LinearLayout>
+            android:gravity="top"
+            android:orientation="vertical"
+            android:paddingBottom="50dp"></LinearLayout>
     </ScrollView>
 
 </android.support.constraint.ConstraintLayout>
