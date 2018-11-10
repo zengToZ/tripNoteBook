@@ -195,6 +195,18 @@ public class Activity_Triplist extends AppCompatActivity {
         RecyclerView.setAdapter(Adapter);
     }
 
+    @Override
+    protected void onStop(){
+        Log.i(TAG,"onStop trip list");
+        super.onStop();
+    }
+
+    @Override
+    protected void onPause(){
+        Log.i(TAG,"on pause trip list");
+        super.onPause();
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void grantUriPermission(Uri uri){
         this.grantUriPermission(this.getPackageName(), uri,
