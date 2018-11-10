@@ -28,15 +28,16 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import com.zz.trip_recorder_3.tools.recorder_tools;
@@ -60,8 +61,9 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         DELETE,
     }
     private mediaTypes mediaType = mediaTypes.camera;
-    private operations photoOperation = operations.ADD;
+    //private operations photoOperation = operations.ADD;
     private String insertItemName = null;
+    private String deleteItemName = null;
 
     private static String jsonFileStr = "";
 
@@ -78,7 +80,6 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     private EditText title;
 
     // for photo
-    private static String CurrentPhotoPath;
     private static Uri CurrentPhotoUri; // for storing photo taken uri
     private static final int TAKE_PHOTO     = 0xb1;
     private static final int PICK_IMAGE     = 0xb2;
@@ -89,9 +90,17 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     final private String[] cameraTitle = {"Take a New Photo", "Open Galleary"};
     final private String[] videoTitle = {"Record a New Video", "Open Galleary"};
 
+    // for storing all positions of all views
     private static Map<Integer,String> position_content;
     private static Map<String,EditText> textMap;
     private static Map<String,Uri> imgMap;
+
+    // for redo and undo use
+    private static ArrayList<Map<Integer,String> > position_content_list;
+    private static ArrayList<Map<String,EditText> > textMap_list;
+    private static ArrayList<Map<String,Uri> > imgMap_list;
+    private int versionCount = -1;
+    private int currVerCount = -1;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -107,6 +116,11 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         position_content = new ArrayMap<Integer, String>();
         textMap = new ArrayMap<String,EditText>();
         imgMap = new ArrayMap<String,Uri>();
+
+        // undo and redo
+        position_content_list = new ArrayList<Map<Integer,String> >();
+        textMap_list = new ArrayList<Map<String,EditText> >();
+        imgMap_list = new ArrayList<Map<String,Uri> >();
 
         // get parent trip id for current trip unit; unit ID is set as parentID_dateString
         parentID = getIntent().getExtras().getInt("parentID");
@@ -219,86 +233,186 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         }
 
         /** set all button clicks**/
+        //undo
         ImageView img1 = findViewById(R.id.imageView1);
         img1.setOnClickListener(new ImageView.OnClickListener(){
             @Override
             public void onClick(View v1){
-
+                if(currVerCount>0){
+                    position_content.clear();
+                    textMap.clear();
+                    imgMap.clear();
+                    currVerCount--;
+                    position_content.putAll(position_content_list.get(currVerCount));
+                    textMap.putAll(textMap_list.get(currVerCount));
+                    imgMap.putAll(imgMap_list.get(currVerCount));
+                }
+                updateEditorView();
             }
         });
-
+        //delete
         ImageView img2 = findViewById(R.id.imageView2);
         img2.setOnClickListener(new ImageView.OnClickListener(){
             @Override
             public void onClick(View v1) {
-
+                if(deleteItemName!=null){
+                    String[] name = staticGlobal.parseViewItem(deleteItemName);
+                    if(name[0].equals("text")){
+                        updateTextMap(operations.DELETE,deleteItemName,null);
+                        updateEditorView();
+                        updateSaveWork();
+                    }
+                    else if(name[0].equals("img")){
+                        updateImgMap(operations.DELETE,deleteItemName,null);
+                        updateEditorView();
+                        updateSaveWork();
+                    }
+                }
             }
         });
-
+        //redo
         ImageView img3 = findViewById(R.id.imageView3);
         img3.setOnClickListener(new ImageView.OnClickListener(){
             @Override
             public void onClick(View v1) {
-                updateTextMap(operations.ADD,"text "+Integer.toString(COUNT),addText(true,null));
+                if(currVerCount<versionCount){
+                    position_content.clear();
+                    textMap.clear();
+                    imgMap.clear();
+                    currVerCount++;
+                    position_content.putAll(position_content_list.get(currVerCount));
+                    textMap.putAll(textMap_list.get(currVerCount));
+                    imgMap.putAll(imgMap_list.get(currVerCount));
+                }
                 updateEditorView();
             }
         });
-
+        //text
         ImageView img4 = findViewById(R.id.imageView4);
         img4.setOnClickListener(new ImageView.OnClickListener(){
+            @Override
+            public void onClick(View v1) {
+                updateTextMap(operations.ADD,"text "+Integer.toString(COUNT),addText(true,null));
+                updateEditorView();
+                updateSaveWork();
+            }
+        });
+        //image
+        ImageView img5 = findViewById(R.id.imageView5);
+        img5.setOnClickListener(new ImageView.OnClickListener(){
             @Override
             public void onClick(View v1) {
                 ItemList_img_choose.newInstance(2,cameraTitle, null).show(getSupportFragmentManager(), "dialog");// new instance = 2 is 1.Camera 2.Gallery
                 mediaType = mediaTypes.camera;
             }
         });
-
-        ImageView img5 = findViewById(R.id.imageView5);
-        img5.setOnClickListener(new ImageView.OnClickListener(){
+        //video
+        ImageView img6 = findViewById(R.id.imageView6);
+        img6.setOnClickListener(new ImageView.OnClickListener(){
             @Override
             public void onClick(View v1) {
                 ItemList_img_choose.newInstance(2,videoTitle, null).show(getSupportFragmentManager(), "dialog");
                 mediaType = mediaTypes.video;
             }
         });
-
         Log.i(TAG, "onCreate complete");
     }
 
 
     /*** update Linear layout View, after insertion and deletion ***/
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void updateEditorView(){
         LinearLayout linearLayout = this.findViewById(R.id.draft_lilayout);
         linearLayout.removeAllViews();
-        TextView tv;
+        EditText tv;
         Uri imgUri = null;
         String itemName;
         String[] line;
 
-        for(int i=0;i<=COUNT;i++){
-            if (position_content.containsKey(i)) {
-                itemName = (String) position_content.get(i);
-                line = staticGlobal.parseViewItem(itemName);
-                switch (line[0]){
-                    case "text":
-                        tv = (TextView) textMap.get(itemName);
-                        LinearLayout.LayoutParams thislayout1 = new LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.MATCH_PARENT);
-                        linearLayout.addView(tv,-1,thislayout1);
-                        createSeparator(linearLayout,itemName,-1);
-                        break;
-                    case "img":
-                        imgUri = (Uri) imgMap.get(itemName);
-                        LinearLayout.LayoutParams thislayout2 = new LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                600);
-                        linearLayout.addView(addImg(imgUri),-1,thislayout2);
-                        createSeparator(linearLayout,itemName,-1);
-                        break;
+        try{
+            for(int i=0;i<=COUNT;i++){
+                if (position_content.containsKey(i)) {
+                    itemName = (String) position_content.get(i);
+                    line = staticGlobal.parseViewItem(itemName);
+                    switch (line[0]){
+                        case "text":
+                            tv = textMap.get(itemName);
+                            LinearLayout.LayoutParams thislayout1 = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    LinearLayout.LayoutParams.MATCH_PARENT);
+                            linearLayout.addView(tv,-1,thislayout1);
+
+                            // create focus frame for deleting
+                            final String dName1 = itemName;
+                            final EditText dText = tv;
+                            tv.setOnFocusChangeListener(new EditText.OnFocusChangeListener(){
+                                @Override
+                                public void onFocusChange(View view, boolean hasFocus){
+                                    if (hasFocus) {
+                                        dText.setBackgroundResource(R.drawable.edit_bg_focus);
+                                        deleteItemName = dName1;
+                                    } else {
+                                        dText.setBackgroundResource(0);
+                                    }
+                                }
+                            });
+
+                            createSeparator(linearLayout,itemName,-1);
+                            break;
+                        case "img":
+                            imgUri = (Uri) imgMap.get(itemName);
+                            ImageView iv = addImg(imgUri);
+                            LinearLayout.LayoutParams thislayout2 = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    600);
+                            linearLayout.addView(iv,-1,thislayout2);
+
+                            // create focus frame for deleting
+                            final String dName2 = itemName;
+                            final ImageView dImg = iv;
+                            iv.setOnClickListener(new ImageView.OnClickListener(){
+                                @Override
+                                public void onClick(View v1) {
+                                    dImg.requestFocus();
+                                }
+                            });
+                            iv.setOnFocusChangeListener(new ImageView.OnFocusChangeListener(){
+                                @Override
+                                public void onFocusChange(View view, boolean hasFocus){
+                                    if (hasFocus) {
+                                        dImg.setBackgroundResource(R.drawable.edit_bg_focus);
+                                        deleteItemName = dName2;
+                                    } else {
+                                        dImg.setBackgroundResource(0);
+                                    }
+                                }
+                            });
+                            createSeparator(linearLayout,itemName,-1);
+                            break;
+                    }
                 }
             }
+        }catch (Exception e){
+            Log.i(TAG, "updateEditorView error: "+e.toString());
         }
+    }
+
+    // save previous work for undo and redo
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void updateSaveWork(){
+        ArrayMap<Integer, String> mP = new ArrayMap<Integer, String>();
+        ArrayMap<String,EditText> mT = new ArrayMap<String,EditText>();
+        ArrayMap<String,Uri> mI = new ArrayMap<String,Uri>();
+
+        mP.putAll(position_content);
+        mT.putAll(textMap);
+        mI.putAll(imgMap);
+
+        position_content_list.add(mP);
+        textMap_list.add(mT);
+        imgMap_list.add(mI);
+        versionCount++;
+        currVerCount++;
     }
 
     private void updateTextMap(operations op, String itemName, EditText newText){
@@ -347,6 +461,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
 
     /**update all map when inserting views**/
     private void insertArrMap(int id){
+        // move all items in all map forward by 1
         for(int j=COUNT;j>id;j--){
             EditText tv = textMap.remove("text "+Integer.toString(j));
             if(tv!=null){
@@ -367,20 +482,24 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     }
 
     private void deleteArrMap(int id){
-        for(int j=id;j<=COUNT;j++){
-            EditText tv = textMap.remove("text "+Integer.toString(j));
-            if(tv!=null){
-                textMap.put("text "+Integer.toString(j-1),tv);
+        textMap.remove("text "+Integer.toString(id));
+        imgMap.remove("img "+Integer.toString(id));
+        position_content.remove(id);
+        // move all items in all map back by 1
+        for(int j=id+1;j<=COUNT;j++){
+            EditText itv = textMap.remove("text "+Integer.toString(j));
+            if(itv!=null){
+                textMap.put("text "+Integer.toString(j-1),itv);
             }
 
-            Uri u = imgMap.remove("img "+Integer.toString(j));
-            if(u!=null){
-                imgMap.put("img "+Integer.toString(j-1),u);
+            Uri iu = imgMap.remove("img "+Integer.toString(j));
+            if(iu!=null){
+                imgMap.put("img "+Integer.toString(j-1),iu);
             }
 
-            String s = position_content.remove(j);
-            if(s!=null){
-                String[] ss = staticGlobal.parseViewItem(s);
+            String is = position_content.remove(j);
+            if(is!=null){
+                String[] ss = staticGlobal.parseViewItem(is);
                 position_content.put(j-1,ss[0]+" "+Integer.toString(Integer.parseInt(ss[1])-1));
             }
         }
@@ -389,41 +508,30 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     /** 1. add text **/
     private EditText addText(boolean isEmpty, String itemContent){
         EditText newText = new EditText(Activity_Editor.this);
-        if(!isEmpty)
-            newText.setText(itemContent);
-        newText.setTextIsSelectable(true);
-        /*newText.setFocusableInTouchMode(true);
         newText.setFocusable(true);
-        newText.requestFocus();*/
+        newText.setFocusableInTouchMode(true);
+        if(!isEmpty){
+            newText.setText(itemContent);
+        }
+        else{
+            newText.setText("\n\n");
+            newText.requestFocus();
+        }
+        newText.setTextIsSelectable(true);
         newText.setBackgroundResource(R.drawable.edit_bg);
         newText.setSingleLine(false);
         newText.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
         newText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-        newText.setLines(3);
-        newText.setMaxLines(101);
+        newText.setLines(1);
+        newText.setMaxLines(1000);
         newText.setVerticalScrollBarEnabled(true);
         newText.setMovementMethod(ScrollingMovementMethod.getInstance());
         newText.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
         Log.i(TAG, "New Text Box added as (global count) "+ Integer.toString(COUNT)+": ");
         return newText;
-        /*if(isInsert){
-            String[] ln = staticGlobal.parseViewItem(itemName);
-            int oldID = Integer.parseInt(ln[1]);
-            String newName = ln[0] + Integer.toString(oldID+1);
-            createSeparator(newName,2*(oldID+1)+1);
-
-        }
-        else {
-            textMap.put(itemName,newText);
-            position_content.put(COUNT,itemName);
-            createSeparator(itemName,-1);
-        }*/
-
     }
 
     /** 2. add images **/
-
-
     // Open camera
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -458,12 +566,19 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         File storageDir = new File(getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),staticGlobal.imgFolder);
         //File image = File.createTempFile( imageFileName,".jpg",storageDir);
         File image = new File(storageDir,imageFileName+".jpg");
-
-        // Save a file: path for use with ACTION_VIEW intents
-        //this.CurrentPhotoPath = image.getAbsolutePath();
         return image;
     }
-
+    // Open gallery
+    private void openGallery(){
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        //Intent intent = new Intent();
+        //intent.setAction(Intent.ACTION_GET_CONTENT);  /* another way to open Gallery*/
+        intent.setType("image/*");
+        startActivityForResult(Intent.createChooser(intent.setFlags(Intent
+                .FLAG_GRANT_READ_URI_PERMISSION), "Select Picture"), PICK_IMAGE);
+        Log.i(TAG,"Gallery Opened");
+    }
+    // create New ImageView
     private ImageView addImg(Uri imgUri){
         ImageView newImg = null;
         try{
@@ -480,6 +595,8 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
             }
             newImg = new ImageView(Activity_Editor.this);
             newImg.setImageBitmap(bitmap);
+            newImg.setFocusable(true);
+            newImg.setFocusableInTouchMode(true);
             Log.i(TAG,"New Image Added as (global count): "+ Integer.toString(COUNT));
         }catch (Exception e){
             Log.i(TAG,"Add img exception:" +e.toString());
@@ -487,23 +604,12 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         return newImg;
     }
 
-    // Open gallery
-    private void openGallery(){
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        //Intent intent = new Intent();
-        //intent.setAction(Intent.ACTION_GET_CONTENT);  /* another way to open Gallery*/
-        intent.setType("image/*");
-        startActivityForResult(Intent.createChooser(intent.setFlags(Intent
-                .FLAG_GRANT_READ_URI_PERMISSION), "Select Picture"), PICK_IMAGE);
-        Log.i(TAG,"Gallery Opened");
-    }
-
-
     /** 3. add audio **/
 
     /** 4. add video **/
 
     /**create separator for each view added**/
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void createSeparator(LinearLayout linearLayout, final String itemName, int position){
         // view separator, able to insert views
         ImageView separator = new ImageView(Activity_Editor.this);
@@ -535,6 +641,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
 
     // Receive result from startActivityForResult
     @Override
+    @RequiresApi(api = Build.VERSION_CODES.M)
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != RESULT_OK) { return; }
         switch (requestCode){
@@ -547,6 +654,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                     updateImgMap(operations.ADD,"img "+Integer.toString(COUNT),CurrentPhotoUri);
                 }
                 updateEditorView();
+                updateSaveWork();
                 break;
             case PICK_IMAGE:
                 Uri u = data.getData();
@@ -561,11 +669,13 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                     updateImgMap(operations.ADD,"img "+Integer.toString(COUNT),u);
                 }
                 updateEditorView();
+                updateSaveWork();
                 break;
         }
     }
 
     // create Insertion Selection Menu
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void createDlgOnInsertion(final String itemName){
         final AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("Insert New..")
@@ -575,6 +685,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                             case 0:
                                 updateTextMap(operations.INSERTION,itemName,addText(true,null));
                                 updateEditorView();
+                                updateSaveWork();
                                 break;
                             case 1:
                                 ItemList_img_choose.newInstance(2,cameraTitle, itemName).show(getSupportFragmentManager(), "dialog");// new instance = 2 is 1.Camera 2.Gallery
@@ -664,9 +775,9 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         });
         alertDialog.show();
     }
-
+    // save the current lay out in Json file
     private void save(){
-        TextView tv;
+        EditText tv;
         Uri imgUri = null;
         String itemName;
         String[] line;
@@ -687,7 +798,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                     switch (line[0]){
                         case "text":
                             jsonStringer.key(itemName);
-                            tv = (TextView) textMap.get(itemName);
+                            tv = textMap.get(itemName);
                             jsonStringer.value(tv.getText().toString());
                             break;
                         case "img":
@@ -735,10 +846,12 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     }
 
     @Override
+    @RequiresApi(api = Build.VERSION_CODES.M)
     protected void onResume(){
         Log.i(TAG,"on Resume editor");
         super.onResume();
         updateEditorView();
+        updateSaveWork();
     }
 
     @Override
