@@ -76,7 +76,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     final private static String TAG = "thisOne";
 
     private String pickedDate;
-    private int year,month,day;
+
     private EditText title;
 
     // for photo
@@ -96,18 +96,19 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     private static Map<String,Uri> imgMap;
 
     // for redo and undo use
-    private static ArrayList<Map<Integer,String> > position_content_list;
-    private static ArrayList<Map<String,EditText> > textMap_list;
-    private static ArrayList<Map<String,Uri> > imgMap_list;
+    private static List<Map<Integer,String> > position_content_list;
+    private static List<Map<String,EditText> > textMap_list;
+    private static List<Map<String,Uri> > imgMap_list;
     private int versionCount = -1;
     private int currVerCount = -1;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity__editor);
+
+        int year,month,day;
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();

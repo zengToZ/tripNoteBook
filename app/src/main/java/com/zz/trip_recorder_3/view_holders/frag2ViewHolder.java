@@ -32,6 +32,7 @@ public class frag2ViewHolder extends RecyclerView.ViewHolder {
     public boolean edittoday;
     public Context context;
     public boolean doDelet;
+    public boolean firstEver;
 
     public frag2ViewHolder(View v, frag2CardModel m){
         super(v);
@@ -45,33 +46,50 @@ public class frag2ViewHolder extends RecyclerView.ViewHolder {
         edittoday = m.edittoday;
         context = m.context;
         doDelet = m.doDelet;
+        firstEver = m.firstEver;
 
         if(!doDelet){
-            background.setOnClickListener(new ImageView.OnClickListener(){
-                @Override
-                public void onClick(View v1) {
-                    Intent intent = new Intent(v1.getContext(), Activity_Triplist.class);
-                    intent.putExtra("isNew",false);
-                    intent.putExtra("tripPackgeID",id);
-                    v1.getContext().startActivity(intent);
-                }
-            });
-            background.setOnLongClickListener(new ImageView.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    Fragment2 fragment2 = Fragment2.newInstance("doDel",null,-1,context);
-                    try{
-                        final FragmentTransaction transaction = ((FragmentActivity)context).getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.main_container, fragment2);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
+            if(firstEver){
+                background.setOnClickListener(new ImageView.OnClickListener(){
+                    @Override
+                    public void onClick(View v1) {
+                        Intent intent = new Intent(v1.getContext(), Activity_Triplist.class);
+                        intent.putExtra("isNew",true);
+                        intent.putExtra("newTripID",staticGlobal.getCurrTripID()+1);
+                        staticGlobal.addTripCount(1);                                           // add trip count also update current trip ID
+                        staticGlobal.setCurrEditorID("");
+                        staticGlobal.setCurrShowingTripID(staticGlobal.getCurrTripID());
+                        v1.getContext().startActivity(intent);
                     }
-                    catch (Exception e){
-                        Log.i("thisOne",e.toString());
+                });
+            }
+            else{
+                background.setOnClickListener(new ImageView.OnClickListener(){
+                    @Override
+                    public void onClick(View v1) {
+                        Intent intent = new Intent(v1.getContext(), Activity_Triplist.class);
+                        intent.putExtra("isNew",false);
+                        intent.putExtra("tripPackgeID",id); // tripPackgeID to Activity_Triplist
+                        v1.getContext().startActivity(intent);
                     }
-                    return true;
-                }
-            });
+                });
+                background.setOnLongClickListener(new ImageView.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        Fragment2 fragment2 = Fragment2.newInstance("doDel",null,-1,context);
+                        try{
+                            final FragmentTransaction transaction = ((FragmentActivity)context).getSupportFragmentManager().beginTransaction();
+                            transaction.replace(R.id.main_container, fragment2);
+                            transaction.addToBackStack(null);
+                            transaction.commit();
+                        }
+                        catch (Exception e){
+                            Log.i("thisOne",e.toString());
+                        }
+                        return true;
+                    }
+                });
+            }
         }
         else {
             background.setOnClickListener(new ImageView.OnClickListener(){

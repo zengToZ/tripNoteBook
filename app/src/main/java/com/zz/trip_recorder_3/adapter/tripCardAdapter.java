@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.zz.trip_recorder_3.R;
 import com.zz.trip_recorder_3.data_models.tripCardModel;
 import com.zz.trip_recorder_3.tools.recorder_tools;
 import com.zz.trip_recorder_3.view_holders.tripCardViewHolder;
@@ -57,7 +58,7 @@ public class tripCardAdapter extends RecyclerView.Adapter<tripCardViewHolder> {
                 tripCardViewHolder.tripCardBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 Log.i("thisOne", "showing: " + tCM.background.toString()+bitmap.toString());
             }
-            else if(tCM.creNew){
+            else if(tCM.creNew && !tCM.doDelete){
                 tripCardViewHolder.tripCardBg.setImageResource(drawable.add_new);
                 tripCardViewHolder.tripCardBg.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
             }
@@ -66,6 +67,12 @@ public class tripCardAdapter extends RecyclerView.Adapter<tripCardViewHolder> {
                 tripCardViewHolder.tripCardBg.setAlpha(150);
                 tripCardViewHolder.tripCardBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 Log.i("thisOne", "showing: default trip card img");
+            }
+            if(tCM.doDelete){
+                tripCardViewHolder.layer2.setVisibility(View.VISIBLE);
+                tripCardViewHolder.tripCardBg.setAlpha(50);
+                tripCardViewHolder.layer2.setImageResource(R.drawable.delet_sign);
+                tripCardViewHolder.layer2.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
             }
         }catch (IOException e) {
             Log.i("thisOne","error"+e.toString());

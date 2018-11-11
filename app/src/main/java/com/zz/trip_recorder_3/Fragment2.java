@@ -40,7 +40,7 @@ public class Fragment2 extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     final private static String TAG = "thisOne";
 
-    private static View view;
+    private View view;
     private static boolean DoDel = false;
 
     private android.support.v7.widget.RecyclerView RecyclerView;
@@ -201,6 +201,8 @@ public class Fragment2 extends Fragment {
                         intent.putExtra("isNew",true);
                         intent.putExtra("newTripID",staticGlobal.getCurrTripID()+1);
                         staticGlobal.addTripCount(1);                                           // add trip count also update current trip ID
+                        staticGlobal.setCurrEditorID("");
+                        staticGlobal.setCurrShowingTripID(staticGlobal.getCurrTripID());
                         startActivity(intent);
                     }
                 });
@@ -237,7 +239,7 @@ public class Fragment2 extends Fragment {
         }
 
         // set Adapter into Recycle View
-        this.RecyclerView = (RecyclerView) v.findViewById(R.id.trip_package_list);
+        RecyclerView = (RecyclerView) v.findViewById(R.id.trip_package_list);
         RecyclerView.setHasFixedSize(true);
         LayoutManager = new LinearLayoutManager(v.getContext());
         RecyclerView.setLayoutManager(LayoutManager);

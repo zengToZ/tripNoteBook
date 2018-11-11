@@ -107,6 +107,15 @@ public class staticGlobal {
         return result;
     }
 
+    // get today date return String
+    public static String  getTodayDate(){
+        Date today = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = df.format(today);
+        return formattedDate;
+    }
+
+    // region: initilize file part...:
     public static void initializeIniFile() {
         try{
             File ff = context.getFileStreamPath(iniFile.getName());
@@ -127,19 +136,11 @@ public class staticGlobal {
 
     public static boolean deleteIniFile() throws IOException{
         File ff = context.getFileStreamPath(iniFile.getName());
-        if(!ff.exists()) {
+        if(ff.exists()) {
             context.deleteFile(iniFile.getName());
             return true;
         }
         else return false;
-    }
-
-    // get today date return String
-    public static String  getTodayDate(){
-        Date today = Calendar.getInstance().getTime();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-        String formattedDate = df.format(today);
-        return formattedDate;
     }
 
     public static boolean isNewTripOpened() throws IOException{

@@ -9,4 +9,5 @@ public class tripCardModel {
     public int parentID;
     public String id;
     public boolean creNew = false;
+    public boolean doDelete = false;
 }

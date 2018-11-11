@@ -37,6 +37,7 @@ import java.util.List;
 public class Fragment1 extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
 
+    private View frag1View;
     final private static String TAG = "thisOne";
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private RecyclerView RecyclerView;
@@ -81,33 +82,21 @@ public class Fragment1 extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
+    public void onResume(){
+        super.onResume();
         List<frag2CardModel> cardList = new ArrayList();
 
         frag2CardModel m1 = new frag2CardModel();
 
-        /*Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imgUri);
-        bitmap = recorder_tools.getResizedBitmap(bitmap,(int)(0.2*bitmap.getWidth()),(int)(0.2*bitmap.getHeight()));
-        ImageView newImg = new ImageView(Activity_Editor.this);
-        newImg.setImageBitmap(bitmap);*/
-
-        //
-        //
         int showID = staticGlobal.getCurrShowingTripID();
         String lastEditID = staticGlobal.getCurrEditorID();
         if(showID == -1){
-            m1.description = "Welcome to Trip NoteBook!";
+            m1.description =
+                    "Welcome to Trip NoteBook!"+
+                            "\n\t\t\tClick to add new JOURNEY!";
+            m1.doDelet = false;
+            m1.firstEver = true;
+            m1.edittoday =false;
             cardList.add(m1);
         }
         else {
@@ -120,29 +109,46 @@ public class Fragment1 extends Fragment {
                         grantUriPermission(m1.background);
                 }
                 m1.id = jb.getInt("trip id");
-                m1.currUnitID = lastEditID;
+                if(lastEditID!=null){
+                    m1.currUnitID = lastEditID;
+                    m1.editToday = "LAST EDIT " + lastEditID.substring(lastEditID.length() - 10, lastEditID.length());
+                    m1.edittoday = true;
+                }
                 m1.title = Integer.toString(jb.getInt("trip id"));
-                m1.editToday = "LAST EDIT " + lastEditID.substring(lastEditID.length() - 10, lastEditID.length());
-                m1.edittoday = true;
                 cardList.add(m1);
             } catch (Exception e) {
                 Log.i(TAG, "show current trip id: " + e.toString());
             }
         }
 
-
-        View v = inflater.inflate(R.layout.fragment_fragment1, container, false);
-        this.RecyclerView = (RecyclerView) v.findViewById(R.id.card_list);
+        RecyclerView = (RecyclerView) frag1View.findViewById(R.id.card_list);
         RecyclerView.setHasFixedSize(true);
-        LayoutManager = new LinearLayoutManager(v.getContext());
+        LayoutManager = new LinearLayoutManager(frag1View.getContext());
         RecyclerView.setLayoutManager(LayoutManager);
 
         Adapter = new cardAdapter(cardList,this.getContext());
         RecyclerView.setAdapter(Adapter);
 
-        getVideo(v);
+        getVideo(frag1View);
+
+        Log.i(TAG,"on Resume Frag2");
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        frag1View = inflater.inflate(R.layout.fragment_fragment1, container, false);
         // Inflate the layout for this fragment
-        return v;
+        return frag1View;
     }
 
     private void getVideo(View v){

@@ -1,6 +1,8 @@
 package com.zz.trip_recorder_3;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -14,6 +16,8 @@ import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 
 import com.zz.trip_recorder_3.adapter.tripCardAdapter;
 import com.zz.trip_recorder_3.data_models.tripCardModel;
@@ -28,11 +32,11 @@ import java.util.List;
 public class Activity_Triplist extends AppCompatActivity {
     final private static String TAG = "thisOne";
 
-    private int id = -1;
-    //private frag2CardModel model;
+    private static int id = -1;
+    private boolean doDel = false;
+
     private RecyclerView RecyclerView;
     private RecyclerView.Adapter Adapter;
-    private RecyclerView.LayoutManager LayoutManager;
     private ActionBar actionBar;
 
     @Override
@@ -42,7 +46,7 @@ public class Activity_Triplist extends AppCompatActivity {
         actionBar = getSupportActionBar();
 
         // create new trip json file if received "isNew = true"
-        if(getIntent().getExtras().getBoolean("isNew")) {
+        if(getIntent().getBooleanExtra("isNew",false)) {
             id = getIntent().getExtras().getInt("newTripID");
             FileOutputStream outputStream;
             JSONObject newTripJson = new JSONObject();
@@ -78,6 +82,7 @@ public class Activity_Triplist extends AppCompatActivity {
 
     @Override
     protected void onResume(){
+        String unitID = null;
         Log.i(TAG,"on Resume trip list");
         super.onResume();
 
@@ -85,6 +90,17 @@ public class Activity_Triplist extends AppCompatActivity {
 
         if(id<0){
             id = getIntent().getExtras().getInt("tripPackgeID");
+        }
+
+        if(getIntent().getBooleanExtra("doDel",false)){
+            //unitID = getIntent().getStringExtra("unitID");
+            doDel = true;
+        }
+
+        if(getIntent().getBooleanExtra("doneDel",false)){
+            unitID = getIntent().getStringExtra("unitID");
+            createAlertDlg("DELETE","Delete Note " + unitID, "Delete","Cancel",unitID);
+            return;
         }
 
         if (actionBar!=null){
@@ -98,7 +114,8 @@ public class Activity_Triplist extends AppCompatActivity {
             //String jsonStr = staticGlobal.getJson(getApplication().getBaseContext(),staticGlobal.getTripJsonName(id));
             try {
                 // unitID: 101_2018-01-01
-                /**Json sample:
+                /**Json format
+                 * Json sample:
                  * "{\"trip id\":103,
                  * \"trip count\":0,
                  * \"103_2018-11-25\":
@@ -140,6 +157,7 @@ public class Activity_Triplist extends AppCompatActivity {
                         t.parentID = id;
                         t.id = name;
                         t.edit = "edit";
+                        t.doDelete = doDel;
                         if(!innerValue.equals("")){
                             t.background = Uri.parse(innerValue);
                             if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M)
@@ -167,19 +185,96 @@ public class Activity_Triplist extends AppCompatActivity {
             }
         }
 
-        // create new unit button click
-        tripCardModel btn = new tripCardModel();
-        //btn.background =
-        btn.creNew = true;
-        btn.parentID = id;
-        btn.id = "";
-        cardList.add(btn);
+        if(doDel){
+            Button back_btn = findViewById(R.id.triplist_back);
+            back_btn.setVisibility(View.VISIBLE);
+            back_btn.setBackgroundResource(android.R.color.transparent);
+            back_btn.setText("BACK");
+            try {
+                back_btn.setOnClickListener(new Button.OnClickListener() {
+                    @Override
+                    public void onClick(View v1) {
+                        //onBackPressed();
+                        finish();
+                    }
+                });
+            }catch (Exception e){
+                Log.i(TAG,e.toString());
+            }
+        }
+        else {
+            // create new unit button click
+            tripCardModel btn = new tripCardModel();
+            //btn.background =
+            btn.creNew = true;
+            btn.parentID = id;
+            btn.id = "";    // set to "" for recognizing it is a plus sign button
+            cardList.add(btn);
+        }
 
         RecyclerView = (RecyclerView) findViewById(R.id.tripunit_list);
         RecyclerView.setHasFixedSize(true);
         RecyclerView.setLayoutManager(new GridLayoutManager(this,3));   // 3 items in a row
         Adapter = new tripCardAdapter(cardList,this);
         RecyclerView.setAdapter(Adapter);
+    }
+
+    private void onDelete(String unitID){
+        File file = new File(getApplication().getBaseContext().getFilesDir(), staticGlobal.getTripJsonName(id));
+        if(file.exists()){
+            try {
+                String jsonStr = staticGlobal.getJson(getApplication().getBaseContext(),staticGlobal.getTripJsonName(id));
+                JSONObject jOb = new JSONObject(jsonStr);
+                if(staticGlobal.getCurrEditorID().equals(unitID)){
+                    staticGlobal.setCurrEditorID("");
+                    jOb.remove("trip_bg");
+                }
+                jOb.remove(unitID);
+                FileOutputStream outputStream = openFileOutput(staticGlobal.getTripJsonName(id), Context.MODE_PRIVATE);
+                outputStream.write(jOb.toString().getBytes());
+                outputStream.close();
+                doDel = false;
+            }catch (Exception e){
+                Log.i(TAG, "error when delete unit from trip package jason file(trip_list):"+e.toString());
+            }
+        }
+    }
+
+    // create ok-cancel alert box
+    private void createAlertDlg(String title, String message, String Y, String N, String unitID){
+        final String delID = unitID;
+        final AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setCancelable(false)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(Y,null)
+                .setNegativeButton(N,null)
+                .create();
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                Button yesButton = (alertDialog).getButton(android.app.AlertDialog.BUTTON_POSITIVE);
+                Button noButton = (alertDialog).getButton(android.app.AlertDialog.BUTTON_NEGATIVE);
+                yesButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onDelete(delID);
+                        //onBackPressed();
+                        finish();
+                        alertDialog.dismiss();
+                    }
+                });
+                noButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        //onBackPressed();
+                        finish();
+                        alertDialog.dismiss();
+                    }
+                });
+            }
+        });
+        alertDialog.show();
     }
 
     @Override
