@@ -168,6 +168,13 @@ public class Fragment2 extends Fragment {
         }
     }
 
+    private void createTypeNewNameDlg(){
+        final AlertDialog.Builder builder = new AlertDialog.Builder(f2context)
+                .setTitle("Insert New..");
+        builder.create();
+        builder.show();
+    }
+
     private void updateView(View v, boolean doDel){
         // create card list for Recycle View
         List<frag2CardModel> cardList = new ArrayList();

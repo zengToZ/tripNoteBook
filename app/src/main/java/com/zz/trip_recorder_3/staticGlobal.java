@@ -62,7 +62,6 @@ public class staticGlobal {
     *
      */
 
-
     public static String getJson(Context context, String fileName){
         StringBuilder stringBuilder = new StringBuilder();
         try {

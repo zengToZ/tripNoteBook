@@ -118,6 +118,7 @@ public class Activity_Triplist extends AppCompatActivity {
                  * Json sample:
                  * "{\"trip id\":103,
                  * \"trip count\":0,
+                 * \"trip title\": Locale.. + Sunday, 2018, Jan, 01
                  * \"103_2018-11-25\":
                  * {\"item count\":3,
                  * \"text 0\":\"\",
