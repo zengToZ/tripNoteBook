@@ -94,12 +94,32 @@ public class staticGlobal {
         else return Integer.toString(i);
     }
 
+    // get today date return String 2018-01-01
+    public static String  getTodayDateStr(){
+        Date today = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = df.format(today);
+        return formattedDate;
+    }
+
     // nice date shown in title, input should be 8digit like 20180101, converted to 2018-01-01
-    @NonNull
-    public static String niceDate(String date){
+
+    public static String niceDate(@NonNull String date){
         if(date.length()!=8) return "";
         else{
             return date.substring(0,4)+"-"+date.substring(4,6)+"-"+date.substring(6,8);
+        }
+    }
+
+    // even nicer date shown as
+    public static String beautifulDate(Date date, boolean isToday){
+        SimpleDateFormat df = new SimpleDateFormat("MMMM dd YYYY EEEE");
+        if(isToday){
+            return df.format(Calendar.getInstance().getTime());
+        }
+        else {
+            if (date != null) return df.format(date);
+            else return df.format(Calendar.getInstance().getTime());
         }
     }
 
@@ -114,14 +134,6 @@ public class staticGlobal {
         }
         String[] result = {s.toString(),itemname.substring(i,l)};
         return result;
-    }
-
-    // get today date return String
-    public static String  getTodayDate(){
-        Date today = Calendar.getInstance().getTime();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-        String formattedDate = df.format(today);
-        return formattedDate;
     }
 
     // region: initilize file part...:

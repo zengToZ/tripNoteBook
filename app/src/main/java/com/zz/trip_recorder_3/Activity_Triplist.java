@@ -34,6 +34,7 @@ public class Activity_Triplist extends AppCompatActivity {
 
     private static int id = -1;
     private boolean doDel = false;
+    private static String createNewTripName;
 
     private RecyclerView RecyclerView;
     private RecyclerView.Adapter Adapter;
@@ -48,6 +49,7 @@ public class Activity_Triplist extends AppCompatActivity {
         // create new trip json file if received "isNew = true"
         if(getIntent().getBooleanExtra("isNew",false)) {
             id = getIntent().getExtras().getInt("newTripID");
+            createNewTripName = getIntent().getExtras().getString("createNewTripName");
             FileOutputStream outputStream;
             JSONObject newTripJson = new JSONObject();
             String filename = staticGlobal.getTripJsonName(id);
@@ -56,6 +58,7 @@ public class Activity_Triplist extends AppCompatActivity {
             try {
                 newTripJson.put("trip id", id);
                 newTripJson.put("trip count",0);
+                newTripJson.put("trip name",createNewTripName);
                 fileContents = newTripJson.toString(1);
                 outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
                 outputStream.write(fileContents.getBytes());
@@ -101,11 +104,6 @@ public class Activity_Triplist extends AppCompatActivity {
             unitID = getIntent().getStringExtra("unitID");
             createAlertDlg("DELETE","Delete Note " + unitID, "Delete","Cancel",unitID);
             return;
-        }
-
-        if (actionBar!=null){
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle("Sample " + Integer.toString(id));
         }
 
         File file = new File(getApplication().getBaseContext().getFilesDir(), staticGlobal.getTripJsonName(id));
@@ -173,6 +171,12 @@ public class Activity_Triplist extends AppCompatActivity {
                     }
                     else if(JsonToken.STRING.equals(nextToken)){
                         String value =  jsonReader.nextString();
+                        if(name.equals("trip name")){
+                            if (actionBar!=null){
+                                actionBar.setDisplayHomeAsUpEnabled(true);
+                                actionBar.setTitle(value);
+                            }
+                        }
                         Log.i(TAG,value);
                     }
                     else if(JsonToken.NUMBER.equals(nextToken)){

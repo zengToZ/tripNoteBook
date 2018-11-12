@@ -11,11 +11,13 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 
 import com.zz.trip_recorder_3.adapter.cardAdapter;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;
@@ -54,6 +56,8 @@ public class Fragment2 extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private static final String trip_id = "trip_id";
+
+    private static String createNewTripName;
 
     //
     private String mParam1;
@@ -116,6 +120,7 @@ public class Fragment2 extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        createNewTripName = Fragment1.locale.CityName+" "+staticGlobal.beautifulDate(null,true);
         f2context = context;
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
@@ -169,15 +174,39 @@ public class Fragment2 extends Fragment {
     }
 
     private void createTypeNewNameDlg(){
+        final EditText input = new EditText(f2context);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setText(createNewTripName);
+        input.setSelectAllOnFocus(true);
         final AlertDialog.Builder builder = new AlertDialog.Builder(f2context)
-                .setTitle("Insert New..");
-        builder.create();
+                .setTitle("Give a name for the new trip")
+                .setView(input)
+                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(f2context, Activity_Triplist.class);
+                        intent.putExtra("isNew",true);
+                        intent.putExtra("newTripID",staticGlobal.getCurrTripID()+1);
+                        intent.putExtra("createNewTripName", input.getText().toString());
+                        staticGlobal.addTripCount(1);                                           // add trip count also update current trip ID
+                        staticGlobal.setCurrEditorID("");
+                        staticGlobal.setCurrShowingTripID(staticGlobal.getCurrTripID());
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
         builder.show();
     }
 
     private void updateView(View v, boolean doDel){
         // create card list for Recycle View
-        List<frag2CardModel> cardList = new ArrayList();
+        ArrayList<frag2CardModel> cardList = new ArrayList();
         if(RecyclerView!=null && RecyclerView.getChildCount()>0){
             RecyclerView.removeAllViews();
         }
@@ -205,13 +234,7 @@ public class Fragment2 extends Fragment {
                 cre_btn.setOnClickListener(new Button.OnClickListener() {
                     @Override
                     public void onClick(View v1) {
-                        Intent intent = new Intent(v1.getContext(), Activity_Triplist.class);
-                        intent.putExtra("isNew",true);
-                        intent.putExtra("newTripID",staticGlobal.getCurrTripID()+1);
-                        staticGlobal.addTripCount(1);                                           // add trip count also update current trip ID
-                        staticGlobal.setCurrEditorID("");
-                        staticGlobal.setCurrShowingTripID(staticGlobal.getCurrTripID());
-                        startActivity(intent);
+                        createTypeNewNameDlg();
                     }
                 });
             }catch (Exception e){
@@ -236,7 +259,7 @@ public class Fragment2 extends Fragment {
                             grantUriPermission(m.background);
                     }
                     m.edittoday = false;
-                    m.title = "Sample" +" "+ Integer.toString(m.id);
+                    m.description = jb.getString("trip name");
                     m.context = f2context;
                     m.doDelet = doDel;
                     cardList.add(m);

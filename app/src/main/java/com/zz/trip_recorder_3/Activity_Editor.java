@@ -131,7 +131,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         title = findViewById(R.id.draft_title);
         title.setEnabled(false);
         if(unitID.equals("")){
-            title.setText(staticGlobal.getTodayDate());
+            title.setText(staticGlobal.getTodayDateStr());
         }
         else{
             title.setText(unitID.substring(unitID.length()-10,unitID.length()));

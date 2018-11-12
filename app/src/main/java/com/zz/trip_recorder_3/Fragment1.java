@@ -56,7 +56,6 @@ import static android.location.LocationManager.GPS_PROVIDER;
  * create an instance of this fragment.
  */
 public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCallback {
-    // TODO: Rename parameter arguments, choose names that match
 
     private View frag1View;
     private static Context frag1context;
@@ -73,7 +72,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
     private VideoView frag1Video;
     private MediaController mediaController;
 
-    private static localeModel locale;
+    public static localeModel locale;   // public because might use it in fragment 2
     private static Geocoder geocoder;
     private LocationManager locationManager;
     private Location location;
@@ -105,7 +104,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
      * @param param2 Parameter 2.
      * @return A new instance of fragment Fragment1.
      */
-    // TODO: Rename and change types and number of parameters
+
     public static Fragment1 newInstance(String param1, String param2, Context param3) {
         Fragment1 fragment = new Fragment1();
         Bundle args = new Bundle();
@@ -132,6 +131,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         if(locale.State != null) showingTitle += locale.State + " ";
         if(locale.Country != null) showingTitle += locale.Country;
         m1.title = showingTitle;
+        m1.context = frag1context;
 
         int showID = staticGlobal.getCurrShowingTripID();
         String lastEditID = staticGlobal.getCurrEditorID();
@@ -141,7 +141,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
                             "\n\t\t\tClick to add new JOURNEY!";
             m1.doDelet = false;
             m1.firstEver = true;
-            m1.edittoday =false;
+            m1.edittoday = false;
             cardList.add(m1);
         }
         else {
@@ -156,10 +156,11 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
                 m1.id = jb.getInt("trip id");
                 if(lastEditID!=null){
                     m1.currUnitID = lastEditID;
-                    m1.editToday = "LAST EDIT " + lastEditID.substring(lastEditID.length() - 10, lastEditID.length());
+                    m1.editToday = "CLICK to last edit " + lastEditID.substring(lastEditID.length() - 10, lastEditID.length());
                     m1.edittoday = true;
                 }
-                m1.description = "Sample" + Integer.toString(jb.getInt("trip id"));
+                if(jb.optString("trip name") != null)
+                    m1.description = jb.getString("trip name");
                 cardList.add(m1);
             } catch (Exception e) {
                 Log.i(TAG, "show current trip id: " + e.toString());
@@ -186,7 +187,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if (frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                     frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-                Toast.makeText(frag1context, "Location permission not granted\nplease grant it", Toast.LENGTH_LONG).show();
+                Toast.makeText(frag1context, "Location permission not granted for location update\nplease grant it", Toast.LENGTH_LONG).show();
                 requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION,
                         android.Manifest.permission.ACCESS_COARSE_LOCATION}, requestCode_1);
                 return;
@@ -304,7 +305,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                 if (frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                         frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-                    Toast.makeText(frag1context, "Location permission not granted\nplease grant it", Toast.LENGTH_LONG).show();
+                    Toast.makeText(frag1context, "Location permission not granted for map update\nplease grant it", Toast.LENGTH_LONG).show();
                     requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION,
                             android.Manifest.permission.ACCESS_COARSE_LOCATION}, requestCode_2);
                     return;

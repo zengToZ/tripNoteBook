@@ -1,14 +1,18 @@
 package com.zz.trip_recorder_3.view_holders;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,6 +20,7 @@ import com.zz.trip_recorder_3.Activity_01;
 import com.zz.trip_recorder_3.Activity_Editor;
 import com.zz.trip_recorder_3.Activity_Triplist;
 import com.zz.trip_recorder_3.Activity_Viewer;
+import com.zz.trip_recorder_3.Fragment1;
 import com.zz.trip_recorder_3.Fragment2;
 import com.zz.trip_recorder_3.R;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;
@@ -33,6 +38,8 @@ public class frag2ViewHolder extends RecyclerView.ViewHolder {
     public Context context;
     public boolean doDelet;
     public boolean firstEver;
+
+    private static String createNewTripName = Fragment1.locale.CityName+" "+staticGlobal.beautifulDate(null,true);
 
     public frag2ViewHolder(View v, frag2CardModel m){
         super(v);
@@ -53,13 +60,7 @@ public class frag2ViewHolder extends RecyclerView.ViewHolder {
                 background.setOnClickListener(new ImageView.OnClickListener(){
                     @Override
                     public void onClick(View v1) {
-                        Intent intent = new Intent(v1.getContext(), Activity_Triplist.class);
-                        intent.putExtra("isNew",true);
-                        intent.putExtra("newTripID",staticGlobal.getCurrTripID()+1);
-                        staticGlobal.addTripCount(1);                                           // add trip count also update current trip ID
-                        staticGlobal.setCurrEditorID("");
-                        staticGlobal.setCurrShowingTripID(staticGlobal.getCurrTripID());
-                        v1.getContext().startActivity(intent);
+                        createTypeNewNameDlg();
                     }
                 });
             }
@@ -123,5 +124,35 @@ public class frag2ViewHolder extends RecyclerView.ViewHolder {
         }
 
 
+    }
+
+    private void createTypeNewNameDlg(){
+        final EditText input = new EditText(context);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setText(createNewTripName);
+        input.setSelectAllOnFocus(true);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context)
+                .setTitle("Give a name for the new trip")
+                .setView(input)
+                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(context, Activity_Triplist.class);
+                        intent.putExtra("isNew",true);
+                        intent.putExtra("newTripID",staticGlobal.getCurrTripID()+1);
+                        intent.putExtra("createNewTripName", input.getText().toString());
+                        staticGlobal.addTripCount(1);                                           // add trip count also update current trip ID
+                        staticGlobal.setCurrEditorID("");
+                        staticGlobal.setCurrShowingTripID(staticGlobal.getCurrTripID());
+                        context.startActivity(intent);
+                    }
+                })
+                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+        builder.show();
     }
 }
