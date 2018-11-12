@@ -2,12 +2,19 @@ package com.zz.trip_recorder_3;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -15,16 +22,30 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.MediaController;
+import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.zz.trip_recorder_3.adapter.cardAdapter;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;
+import com.zz.trip_recorder_3.data_models.localeModel;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import static android.location.LocationManager.GPS_PROVIDER;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -34,10 +55,15 @@ import java.util.List;
  * Use the {@link Fragment1#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class Fragment1 extends Fragment {
+public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCallback {
     // TODO: Rename parameter arguments, choose names that match
 
     private View frag1View;
+    private static Context frag1context;
+
+    private static final int requestCode_1 = 0xfffa;
+    private static final int requestCode_2 = 0xfffb;
+
     final private static String TAG = "thisOne";
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private RecyclerView RecyclerView;
@@ -47,6 +73,14 @@ public class Fragment1 extends Fragment {
     private VideoView frag1Video;
     private MediaController mediaController;
 
+    private static localeModel locale;
+    private static Geocoder geocoder;
+    private LocationManager locationManager;
+    private Location location;
+    private double latitude;
+    private double longitude;
+
+    private GoogleMap googleMap;
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -72,21 +106,32 @@ public class Fragment1 extends Fragment {
      * @return A new instance of fragment Fragment1.
      */
     // TODO: Rename and change types and number of parameters
-    public static Fragment1 newInstance(String param1, String param2) {
+    public static Fragment1 newInstance(String param1, String param2, Context param3) {
         Fragment1 fragment = new Fragment1();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
+        frag1context = param3;
         return fragment;
     }
 
     @Override
     public void onResume(){
         super.onResume();
-        List<frag2CardModel> cardList = new ArrayList();
+        Log.i(TAG,"on Resume Frag2");
+        // locale service start on..
+        updateLocation();
 
+        List<frag2CardModel> cardList = new ArrayList();
+        // showing just one card on current editing status
         frag2CardModel m1 = new frag2CardModel();
+        String showingTitle = "Now at ";
+        if(locale.Address1 != null) showingTitle += locale.Address1 + " ";
+        if(locale.CityName != null) showingTitle += locale.CityName + " ";
+        if(locale.State != null) showingTitle += locale.State + " ";
+        if(locale.Country != null) showingTitle += locale.Country;
+        m1.title = showingTitle;
 
         int showID = staticGlobal.getCurrShowingTripID();
         String lastEditID = staticGlobal.getCurrEditorID();
@@ -114,7 +159,7 @@ public class Fragment1 extends Fragment {
                     m1.editToday = "LAST EDIT " + lastEditID.substring(lastEditID.length() - 10, lastEditID.length());
                     m1.edittoday = true;
                 }
-                m1.title = Integer.toString(jb.getInt("trip id"));
+                m1.description = "Sample" + Integer.toString(jb.getInt("trip id"));
                 cardList.add(m1);
             } catch (Exception e) {
                 Log.i(TAG, "show current trip id: " + e.toString());
@@ -129,27 +174,174 @@ public class Fragment1 extends Fragment {
         Adapter = new cardAdapter(cardList,this.getContext());
         RecyclerView.setAdapter(Adapter);
 
-        getVideo(frag1View);
+        //getVideo(frag1View);
 
-        Log.i(TAG,"on Resume Frag2");
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    // update and get current location
+    private void updateLocation() {
+        locale = new localeModel();
+        geocoder = new Geocoder(frag1context, Locale.getDefault());
+        // check permission is granted or not
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if (frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(frag1context, "Location permission not granted\nplease grant it", Toast.LENGTH_LONG).show();
+                requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION,
+                        android.Manifest.permission.ACCESS_COARSE_LOCATION}, requestCode_1);
+                return;
+            }
+        }
+        locationManager = (LocationManager) frag1context.getSystemService(Context.LOCATION_SERVICE);
+        // Getting GPS status
+        boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        // Getting network status
+        boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        // case when all disabled
+        if (!isGPSEnabled && !isNetworkEnabled){
+            Toast.makeText(frag1context, "No available location service!\nEither turn on GPS or network", Toast.LENGTH_LONG).show();
+            return;
+        }
+        // case when either enabled, to choose a newer one, but update request send by GPS first
+        else {
+            if (isGPSEnabled) {
+                locationManager.requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER,
+                        staticGlobal.MIN_TIME_UPDATES,
+                        staticGlobal.MIN_DISTANCE_UPDATES, this);
+                Log.i(TAG, "requestLocationUpdates by GPS");
+            } else {
+                locationManager.requestLocationUpdates(
+                        LocationManager.NETWORK_PROVIDER,
+                        staticGlobal.MIN_TIME_UPDATES,
+                        staticGlobal.MIN_DISTANCE_UPDATES, this);
+                Log.i(TAG, "requestLocationUpdates by Network");
+            }
+            Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Location locationNet = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+            long GPSLocationTime = 0;
+            if (locationGPS != null)
+                GPSLocationTime = locationGPS.getTime();
+            else {
+                locationManager.requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER,
+                        staticGlobal.URGENT_TIME_UPDATES,
+                        staticGlobal.URGENT_DISTANCE_UPDATES, this);
+                Log.i(TAG, "requestLocationUpdates by GPS");
+            }
+
+            long NetLocationTime = 0;
+            if (locationNet != null)
+                NetLocationTime = locationNet.getTime();
+
+            if (GPSLocationTime - NetLocationTime > 0) location = locationGPS;
+            else location = locationNet;
+        }
+        getLocale(location);
+        updateMap();
+    }
+
+    private void getLocale(Location loc){
+        List<Address> addresses = null;
+        if(loc != null){
+            try{
+                latitude = loc.getLatitude();
+                longitude = loc.getLongitude();
+                addresses = geocoder.getFromLocation(latitude,longitude,1);
+            }catch (IOException e){
+                Log.i(TAG,"get locale error: "+e.toString());
+            }
+            if(addresses != null && addresses.size()>0){
+                locale.Address1 = addresses.get(0).getAddressLine(0);
+                locale.Address2 = addresses.get(0).getAddressLine(1);
+                locale.CityName = addresses.get(0).getLocality();
+                locale.State = addresses.get(0).getAdminArea();
+                locale.Country = addresses.get(0).getCountryName();
+            }
+        }
+        else {
+            Log.i(TAG,"location is null");
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        frag1View = inflater.inflate(R.layout.fragment_fragment1, container, false);
-        // Inflate the layout for this fragment
-        return frag1View;
+    public void onLocationChanged(Location location) {
+        getLocale(location);
+        Log.i(TAG,"latitude " + latitude + "|longitude " + longitude + "|city "+ locale.CityName + "|country "+ locale.Country);
     }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        Toast.makeText(frag1context, "Location Provider Disabled\nEither turn on GPS or network", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {}
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+
+    private void updateMap() throws NullPointerException{
+        FragmentManager fragmentManager = getFragmentManager();
+        try{
+            SupportMapFragment mapFragment = (SupportMapFragment)
+                    (fragmentManager != null ? getChildFragmentManager().findFragmentById(R.id.frag1Map) : null);
+            if (mapFragment != null) {
+                mapFragment.getMapAsync(this);
+            }
+        }catch (Exception e){
+            Log.i(TAG, "Update map "+ e.toString());
+        }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap GMap) {
+        googleMap = GMap;
+        if(googleMap!=null){
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if (frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                        frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                    Toast.makeText(frag1context, "Location permission not granted\nplease grant it", Toast.LENGTH_LONG).show();
+                    requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION,
+                            android.Manifest.permission.ACCESS_COARSE_LOCATION}, requestCode_2);
+                    return;
+                }
+            }
+            googleMap.setMyLocationEnabled(true);
+            googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            LatLng currLocale = new LatLng(latitude,longitude);
+            MarkerOptions MO = new MarkerOptions().position(currLocale).title(locale.CityName).snippet(locale.Address1);
+            googleMap.addMarker(MO);
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currLocale,14f));
+            UiSettings uiSettings = googleMap.getUiSettings();
+            uiSettings.setZoomControlsEnabled(true);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantedResults){
+
+        for (int grantResult : grantedResults) {
+            if (grantResult == PackageManager.PERMISSION_DENIED) {
+                Toast.makeText(frag1context, "You deny one permission!\nplease grant it", Toast.LENGTH_LONG).show();
+                return;
+            }
+        }
+        switch (requestCode){
+            case requestCode_1:
+                updateLocation();
+                break;
+            case requestCode_2:
+                updateMap();
+                break;
+        }
+    }
+
+
+
 
     private void getVideo(View v){
         frag1Video = v.findViewById(R.id.frag1Video);
@@ -171,6 +363,24 @@ public class Fragment1 extends Fragment {
         });
     }
 
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        frag1View = inflater.inflate(R.layout.fragment_fragment1, container, false);
+        // Inflate the layout for this fragment
+        return frag1View;
+    }
+
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
@@ -181,6 +391,8 @@ public class Fragment1 extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        Log.i(TAG,"on attach Frag1");
+        frag1context = context;
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {

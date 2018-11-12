@@ -59,7 +59,7 @@ public class Fragment2 extends Fragment {
     private String mParam1;
     private String mParam2;
     private int Trip_id_forDel;
-    private static Context context;
+    private static Context f2context;
 
     private OnFragmentInteractionListener mListener;
 
@@ -84,7 +84,7 @@ public class Fragment2 extends Fragment {
         args.putString(ARG_PARAM2, param2);
         args.putInt(trip_id, id);
         fragment.setArguments(args);
-        context = param3;
+        f2context = param3;
         return fragment;
     }
 
@@ -116,6 +116,7 @@ public class Fragment2 extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        f2context = context;
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
@@ -229,7 +230,7 @@ public class Fragment2 extends Fragment {
                     }
                     m.edittoday = false;
                     m.title = "Sample" +" "+ Integer.toString(m.id);
-                    m.context = context;
+                    m.context = f2context;
                     m.doDelet = doDel;
                     cardList.add(m);
                 }
@@ -251,7 +252,7 @@ public class Fragment2 extends Fragment {
     // create ok-cancel alert box
     private void createAlertDlg(String title, String message, String Y, String N, String DelFile){
         final String delFile = DelFile;
-        final AlertDialog alertDialog = new AlertDialog.Builder(context)
+        final AlertDialog alertDialog = new AlertDialog.Builder(f2context)
                 .setCancelable(false)
                 .setTitle(title)
                 .setMessage(message)

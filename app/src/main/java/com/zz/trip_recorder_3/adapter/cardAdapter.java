@@ -73,7 +73,7 @@ public class cardAdapter extends RecyclerView.Adapter<frag2ViewHolder> {
 
         if (CM.title!=null) {
             frag2ViewHolder.title.setText(CM.title);
-            frag2ViewHolder.title.setTextSize(TypedValue.COMPLEX_UNIT_SP,30f);
+            frag2ViewHolder.title.setTextSize(TypedValue.COMPLEX_UNIT_SP,18f);
         }
         if (CM.description!=null) {
             frag2ViewHolder.description.setText(CM.description);

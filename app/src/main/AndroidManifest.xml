@@ -5,13 +5,17 @@
     <!-- To access Google+ APIs: -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
 
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="true" />
-
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     "
     <application
         android:allowBackup="true"
@@ -21,6 +25,13 @@
         android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light">
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyC-trr122rhVUEn5K8aDXJtziJAQWdMGJw" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
         <activity
             android:name=".Activity_01"
             android:label="@string/app_name"
@@ -31,7 +42,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activity_Editor"
+        <activity
+            android:name=".Activity_Editor"
             android:theme="@style/DayNight" />
 
         <provider
@@ -44,13 +56,13 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name=".Activity_Viewer"
+        <activity
+            android:name=".Activity_Viewer"
             android:theme="@style/DayNight" />
-        <activity android:name=".Activity_Triplist"
+        <activity
+            android:name=".Activity_Triplist"
             android:theme="@style/DayNight" />
-
-
-        <activity android:name=".ExtraViewer.ImageViewer"></activity>
+        <activity android:name=".ExtraViewer.ImageViewer" />
     </application>
 
 </manifest>

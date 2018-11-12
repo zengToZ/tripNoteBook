@@ -80,6 +80,9 @@ public class Fragment3 extends Fragment {
                 File file;
                 String fileName, JsonContent;
                 LinearLayout f = v.findViewById(R.id.frag_3_llyt);
+                Button b1 = new Button(v.getContext());
+                b1.setText("More content to come");
+                f.addView(b1);
                 try {
                     for (int i = 100; i <= staticGlobal.getCurrTripID(); i++) {
                         fileName = staticGlobal.getTripJsonName(i);

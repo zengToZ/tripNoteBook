@@ -1,5 +1,6 @@
 package com.zz.trip_recorder_3;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -18,17 +19,24 @@ import java.io.File;
 
 import static android.os.Environment.getExternalStoragePublicDirectory;
 
+@TargetApi(Build.VERSION_CODES.KITKAT)
 public class Activity_01 extends AppCompatActivity implements
         Fragment1.OnFragmentInteractionListener,
         Fragment2.OnFragmentInteractionListener,
         Fragment3.OnFragmentInteractionListener{
 
     final private static int REQUEST_ALL = 0xa1;
+
     final private String[] PERMISSIONS = {
+             android.Manifest.permission.INTERNET,
             android.Manifest.permission.CAMERA,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
             android.Manifest.permission.READ_EXTERNAL_STORAGE,
-            android.Manifest.permission.ACCESS_WIFI_STATE
+            android.Manifest.permission.ACCESS_WIFI_STATE,
+            android.Manifest.permission.ACCESS_NETWORK_STATE,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
     };
 
     final private static String TAG = "thisOne";
@@ -41,12 +49,12 @@ public class Activity_01 extends AppCompatActivity implements
             switch (item.getItemId()) {
                 case R.id.navigation_01:
                     //mTextMessage.setText(R.string.title_01);
-                    Fragment1 fragment1 =  Fragment1.newInstance(null,null);
+                    Fragment1 fragment1 =  Fragment1.newInstance(null,null,Activity_01.this);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_container,fragment1).commit();
                     return true;
                 case R.id.navigation_02:
                     //mTextMessage.setText(R.string.title_02);
-                    Fragment2 fragment2 = Fragment2.newInstance(null,null, -1,Activity_01.this);
+                    Fragment2 fragment2 = Fragment2.newInstance(null,null, -1, Activity_01.this);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_container,fragment2).commit();
                     return true;
                 case R.id.navigation_03:
@@ -111,7 +119,6 @@ public class Activity_01 extends AppCompatActivity implements
 
     @Override
     protected void onStop(){
-
         Log.i(TAG,"onStop Act1");
         super.onStop();
     }

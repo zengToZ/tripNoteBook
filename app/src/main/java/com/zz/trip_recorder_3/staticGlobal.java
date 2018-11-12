@@ -27,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.zz.trip_recorder_3.tools.iniHelper_tools;
 
 import static android.os.Environment.getExternalStoragePublicDirectory;
@@ -35,11 +37,19 @@ public class staticGlobal {
     public static Context context;
     public static File fDir;
     //private static File iniFile = new File(Environment.getExternalStorageDirectory().toString()+"/trip_recorder_setting.ini");
-    final private static File iniFile = new File(fDir, "settings.tn");
+    private final static File iniFile = new File(fDir, "settings.tn");
 
-    final private static String TAG = "thisOne";
+    private final static String TAG = "thisOne";
 
-    final public static String imgFolder = "tripNoteBook";
+    public final static String imgFolder = "tripNoteBook";
+
+    // The minimum distance to change Updates in meters
+    public static final long MIN_DISTANCE_UPDATES = 20; //  meters
+    public static final long URGENT_DISTANCE_UPDATES = (long)0.2; //  meters
+
+    // The minimum time between updates in milliseconds
+    public static final long MIN_TIME_UPDATES = 1000 * 60 * 60; // milliseconds - 1 hour
+    public static final long URGENT_TIME_UPDATES = 1000; // milliseconds - 1 sec
 
     /*
     * ini attribute:
@@ -232,6 +242,11 @@ public class staticGlobal {
         inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
         String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
         return Uri.parse(path);
+    }
+
+    public static boolean isGooglePlayServicesAvailable(Context context) {
+        int status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
+        return status == ConnectionResult.SUCCESS;
     }
 
 /*
