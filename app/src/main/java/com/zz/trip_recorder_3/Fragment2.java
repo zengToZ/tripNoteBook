@@ -19,14 +19,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.zz.trip_recorder_3.adapter.cardAdapter;
+import com.zz.trip_recorder_3.adapter.frag2CardAdapter;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;
 
 import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -274,7 +273,7 @@ public class Fragment2 extends Fragment {
         LayoutManager = new LinearLayoutManager(v.getContext());
         RecyclerView.setLayoutManager(LayoutManager);
 
-        Adapter = new cardAdapter(cardList,this.getContext());
+        Adapter = new frag2CardAdapter(cardList,this.getContext());
         RecyclerView.setAdapter(Adapter);
     }
 

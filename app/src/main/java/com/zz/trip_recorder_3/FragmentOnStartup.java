@@ -2,7 +2,6 @@ package com.zz.trip_recorder_3;
 
 import android.content.Context;
 import android.location.Criteria;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,25 +9,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.IOException;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link Fragment3.OnFragmentInteractionListener} interface
+ * {@link FragmentOnStartup.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link Fragment3#newInstance} factory method to
+ * Use the {@link FragmentOnStartup#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class Fragment3 extends Fragment {
+public class FragmentOnStartup extends Fragment {
     final private String TAG = "thisOne";
     private View frag3View;
     private Context frag3context;
@@ -43,7 +36,7 @@ public class Fragment3 extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public Fragment3() {
+    public FragmentOnStartup() {
         // Required empty public constructor
     }
     /**
@@ -52,11 +45,11 @@ public class Fragment3 extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment Fragment3.
+     * @return A new instance of fragment FragmentOnStartup.
      */
     // TODO: Rename and change types and number of parameters
-    public static Fragment3 newInstance(String param1, String param2) {
-        Fragment3 fragment = new Fragment3();
+    public static FragmentOnStartup newInstance(String param1, String param2) {
+        FragmentOnStartup fragment = new FragmentOnStartup();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -68,7 +61,7 @@ public class Fragment3 extends Fragment {
     public void onResume(){
         super.onResume();
         Log.i(TAG, "frag3 on resume");
-        LinearLayout llyt = frag3View.findViewById(R.id.frag_3_llyt);
+        //LinearLayout llyt = frag3View.findViewById(R.id.frag_3_llyt);
         TextView batteryStatus = new TextView(frag3context);
         batteryStatus.setEnabled(false);
 
@@ -94,7 +87,7 @@ public class Fragment3 extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        frag3View = inflater.inflate(R.layout.fragment_fragment3, container, false);
+        frag3View = inflater.inflate(R.layout.fragment_on_startup, container, false);
         return frag3View;
     }
     // TODO: Rename method, update argument and hook method into UI event

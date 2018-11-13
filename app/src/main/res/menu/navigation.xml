@@ -11,9 +11,4 @@
         android:icon="@drawable/ic_beenhere_black_24dp"
         android:title="@string/title_02" />
 
-    <item
-        android:id="@+id/navigation_03"
-        android:icon="@drawable/ic_child_care_black_24dp"
-        android:title="@string/title_03" />
-
 </menu>

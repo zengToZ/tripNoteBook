@@ -32,7 +32,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.zz.trip_recorder_3.adapter.cardAdapter;
+import com.zz.trip_recorder_3.adapter.frag2CardAdapter;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;
 import com.zz.trip_recorder_3.data_models.localeModel;
 
@@ -162,7 +162,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(frag1View.getContext());
         recyclerView.setLayoutManager(layoutManager);
 
-        RecyclerView.Adapter adapter = new cardAdapter(cardList, this.getContext());
+        RecyclerView.Adapter adapter = new frag2CardAdapter(cardList, this.getContext());
         recyclerView.setAdapter(adapter);
 
         //getVideo(frag1View);

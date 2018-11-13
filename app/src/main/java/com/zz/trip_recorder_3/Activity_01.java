@@ -22,8 +22,7 @@ import static android.os.Environment.getExternalStoragePublicDirectory;
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class Activity_01 extends AppCompatActivity implements
         Fragment1.OnFragmentInteractionListener,
-        Fragment2.OnFragmentInteractionListener,
-        Fragment3.OnFragmentInteractionListener{
+        Fragment2.OnFragmentInteractionListener{
 
     final private static int REQUEST_ALL = 0xa1;
 
@@ -43,24 +42,16 @@ public class Activity_01 extends AppCompatActivity implements
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
-
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_01:
-                    //mTextMessage.setText(R.string.title_01);
                     Fragment1 fragment1 =  Fragment1.newInstance(null,null);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_container,fragment1).commit();
                     return true;
                 case R.id.navigation_02:
-                    //mTextMessage.setText(R.string.title_02);
                     Fragment2 fragment2 = Fragment2.newInstance(null,null, -1);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_container,fragment2).commit();
-                    return true;
-                case R.id.navigation_03:
-                    //mTextMessage.setText(R.string.title_03);
-                    Fragment3 fragment3 = Fragment3.newInstance(null,null);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_container,fragment3).commit();
                     return true;
             }
             return false;

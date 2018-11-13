@@ -26,7 +26,7 @@ import com.zz.trip_recorder_3.R;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;
 import com.zz.trip_recorder_3.staticGlobal;
 
-public class frag2ViewHolder extends RecyclerView.ViewHolder {
+public class frag2CardViewHolder extends RecyclerView.ViewHolder {
     public ImageView background;
     public ImageView layer1;
     public TextView title;
@@ -41,7 +41,7 @@ public class frag2ViewHolder extends RecyclerView.ViewHolder {
 
     private static String createNewTripName = Fragment1.locale.CityName+" "+staticGlobal.beautifulDate(null,true);
 
-    public frag2ViewHolder(View v, frag2CardModel m){
+    public frag2CardViewHolder(View v, frag2CardModel m){
         super(v);
         background = v.findViewById(R.id.card_bg);
         layer1 = v.findViewById(R.id.layer1);
