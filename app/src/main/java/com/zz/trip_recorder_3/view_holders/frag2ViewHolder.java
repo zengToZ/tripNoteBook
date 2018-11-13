@@ -77,7 +77,7 @@ public class frag2ViewHolder extends RecyclerView.ViewHolder {
                 background.setOnLongClickListener(new ImageView.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
-                        Fragment2 fragment2 = Fragment2.newInstance("doDel",null,-1,context);
+                        Fragment2 fragment2 = Fragment2.newInstance("doDel",null,-1);
                         try{
                             final FragmentTransaction transaction = ((FragmentActivity)context).getSupportFragmentManager().beginTransaction();
                             transaction.replace(R.id.main_container, fragment2);
@@ -96,7 +96,7 @@ public class frag2ViewHolder extends RecyclerView.ViewHolder {
             background.setOnClickListener(new ImageView.OnClickListener(){
                 @Override
                 public void onClick(View v1) {
-                    Fragment2 fragment2 = Fragment2.newInstance(null,"doneDel", id, context);
+                    Fragment2 fragment2 = Fragment2.newInstance(null,"doneDel", id);
                     try{
                         final FragmentTransaction transaction = ((FragmentActivity)context).getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.main_container, fragment2);

@@ -49,12 +49,12 @@ public class Activity_01 extends AppCompatActivity implements
             switch (item.getItemId()) {
                 case R.id.navigation_01:
                     //mTextMessage.setText(R.string.title_01);
-                    Fragment1 fragment1 =  Fragment1.newInstance(null,null,Activity_01.this);
+                    Fragment1 fragment1 =  Fragment1.newInstance(null,null);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_container,fragment1).commit();
                     return true;
                 case R.id.navigation_02:
                     //mTextMessage.setText(R.string.title_02);
-                    Fragment2 fragment2 = Fragment2.newInstance(null,null, -1, Activity_01.this);
+                    Fragment2 fragment2 = Fragment2.newInstance(null,null, -1);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_container,fragment2).commit();
                     return true;
                 case R.id.navigation_03:
@@ -71,7 +71,8 @@ public class Activity_01 extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
+        if(actionBar!=null)
+            actionBar.hide();
         setContentView(R.layout.activity_01);
 
         // for initialising
@@ -79,7 +80,7 @@ public class Activity_01 extends AppCompatActivity implements
         staticGlobal.context = this;
         staticGlobal.initializeIniFile();
 
-        /***---check all permissions--***/
+        /*---check all permissions--*/
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if(!hasPermissions(this, PERMISSIONS)){
                 ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_ALL);
@@ -88,15 +89,14 @@ public class Activity_01 extends AppCompatActivity implements
 
         File newDir = new File(getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),staticGlobal.imgFolder);
         if (!newDir.exists()) {
-            newDir.mkdirs();
+            if(newDir.mkdirs()){
+                Log.i(TAG,"new private directory picture folder created");
+            }
         }
 
-        //mTextMessage = (TextView) findViewById(R.id.message);
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        Fragment1 frag = new Fragment1();
-        getSupportFragmentManager().beginTransaction().add(R.id.main_container,frag).commit();
     }
 
     // check permission since Android M version
@@ -115,6 +115,8 @@ public class Activity_01 extends AppCompatActivity implements
     protected void onResume(){
         Log.i(TAG,"on Resume Act1");
         super.onResume();
+        Fragment1 fragment1 =  Fragment1.newInstance(null,null);
+        getSupportFragmentManager().beginTransaction().add(R.id.main_container,fragment1).commit();
     }
 
     @Override

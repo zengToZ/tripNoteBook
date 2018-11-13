@@ -31,7 +31,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.zz.trip_recorder_3.adapter.cardAdapter;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;
@@ -40,12 +39,10 @@ import com.zz.trip_recorder_3.data_models.localeModel;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static android.location.LocationManager.GPS_PROVIDER;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -58,28 +55,19 @@ import static android.location.LocationManager.GPS_PROVIDER;
 public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCallback {
 
     private View frag1View;
-    private static Context frag1context;
+    private Context frag1context;
 
     private static final int requestCode_1 = 0xfffa;
     private static final int requestCode_2 = 0xfffb;
 
     final private static String TAG = "thisOne";
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private RecyclerView RecyclerView;
-    private RecyclerView.Adapter Adapter;
-    private RecyclerView.LayoutManager LayoutManager;
 
     private VideoView frag1Video;
-    private MediaController mediaController;
 
     public static localeModel locale;   // public because might use it in fragment 2
     private static Geocoder geocoder;
-    private LocationManager locationManager;
-    private Location location;
     private double latitude;
     private double longitude;
-
-    private GoogleMap googleMap;
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -94,8 +82,6 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         // Required empty public constructor
     }
 
-    /** my insertion  **/
-
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -105,13 +91,12 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
      * @return A new instance of fragment Fragment1.
      */
 
-    public static Fragment1 newInstance(String param1, String param2, Context param3) {
+    public static Fragment1 newInstance(String param1, String param2) {
         Fragment1 fragment = new Fragment1();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
-        frag1context = param3;
         return fragment;
     }
 
@@ -145,9 +130,13 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
             cardList.add(m1);
         }
         else {
-            String JsonContent = staticGlobal.getJson(getActivity().getBaseContext(), staticGlobal.getTripJsonName(showID));
+            String JsonContent = null;
+            JSONObject jb= null;
+            if(getActivity()!=null)
+                JsonContent = staticGlobal.getJson(getActivity().getBaseContext(), staticGlobal.getTripJsonName(showID));
             try {
-                JSONObject jb = new JSONObject(JsonContent);
+                if(JsonContent!=null)
+                    jb = new JSONObject(JsonContent);
                 if (jb.opt("trip_bg") !=null ) {
                     m1.background = Uri.parse(jb.getString("trip_bg"));
                     if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M)
@@ -167,13 +156,14 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
             }
         }
 
-        RecyclerView = (RecyclerView) frag1View.findViewById(R.id.card_list);
-        RecyclerView.setHasFixedSize(true);
-        LayoutManager = new LinearLayoutManager(frag1View.getContext());
-        RecyclerView.setLayoutManager(LayoutManager);
+        // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+        android.support.v7.widget.RecyclerView recyclerView = (RecyclerView) frag1View.findViewById(R.id.card_list);
+        recyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(frag1View.getContext());
+        recyclerView.setLayoutManager(layoutManager);
 
-        Adapter = new cardAdapter(cardList,this.getContext());
-        RecyclerView.setAdapter(Adapter);
+        RecyclerView.Adapter adapter = new cardAdapter(cardList, this.getContext());
+        recyclerView.setAdapter(adapter);
 
         //getVideo(frag1View);
 
@@ -193,13 +183,14 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
                 return;
             }
         }
-        locationManager = (LocationManager) frag1context.getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) frag1context.getSystemService(Context.LOCATION_SERVICE);
         // Getting GPS status
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         // Getting network status
         boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
         // case when all disabled
+        Location location;
         if (!isGPSEnabled && !isNetworkEnabled){
             Toast.makeText(frag1context, "No available location service!\nEither turn on GPS or network", Toast.LENGTH_LONG).show();
             return;
@@ -300,8 +291,8 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
 
     @Override
     public void onMapReady(GoogleMap GMap) {
-        googleMap = GMap;
-        if(googleMap!=null){
+        GoogleMap googleMap = GMap;
+        if(googleMap !=null){
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                 if (frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                         frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
@@ -347,7 +338,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
     private void getVideo(View v){
         frag1Video = v.findViewById(R.id.frag1Video);
         frag1Video.setVideoPath("http://www.html5videoplayer.net/videos/toystory.mp4");
-        mediaController = new MediaController(v.getContext());
+        MediaController mediaController = new MediaController(v.getContext());
         mediaController.setAnchorView(frag1Video);
         frag1Video.setMediaController(mediaController);
         frag1Video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {

@@ -42,8 +42,15 @@ public class Fragment2 extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     final private static String TAG = "thisOne";
 
+    // fragment2 global fields
+    private String mParam1;
+    private String mParam2;
+    private int Trip_id_forDel;
+    private Context f2context;
     private View view;
     private static boolean DoDel = false;
+
+    private static String createNewTripName;
 
     private android.support.v7.widget.RecyclerView RecyclerView;
     private RecyclerView.Adapter Adapter;
@@ -56,14 +63,6 @@ public class Fragment2 extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private static final String trip_id = "trip_id";
-
-    private static String createNewTripName;
-
-    //
-    private String mParam1;
-    private String mParam2;
-    private int Trip_id_forDel;
-    private static Context f2context;
 
     private OnFragmentInteractionListener mListener;
 
@@ -81,14 +80,13 @@ public class Fragment2 extends Fragment {
      * @return A new instance of fragment Fragment2.
      */
     // TODO: Rename and change types and number of parameters
-    public static Fragment2 newInstance(String param1, String param2, int id, Context param3) {
+    public static Fragment2 newInstance(String param1, String param2, int id) {
         Fragment2 fragment = new Fragment2();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
         args.putInt(trip_id, id);
         fragment.setArguments(args);
-        f2context = param3;
         return fragment;
     }
 
