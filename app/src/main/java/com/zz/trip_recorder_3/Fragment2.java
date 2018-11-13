@@ -211,7 +211,6 @@ public class Fragment2 extends Fragment {
             RecyclerView.removeAllViews();
         }
 
-
         /** create new **/
         Button cre_btn = v.findViewById(R.id.cre_new);
         cre_btn.setBackgroundResource(android.R.color.transparent);
@@ -259,7 +258,9 @@ public class Fragment2 extends Fragment {
                             grantUriPermission(m.background);
                     }
                     m.edittoday = false;
-                    m.description = jb.getString("trip name");
+                    if(jb.opt("trip name")!=null){
+                        m.description = jb.getString("trip name");
+                    }
                     m.context = f2context;
                     m.doDelet = doDel;
                     cardList.add(m);

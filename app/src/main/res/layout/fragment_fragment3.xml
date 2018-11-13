@@ -4,6 +4,7 @@
     android:id="@+id/frag_3"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="16dp"
     tools:context=".Fragment3">
 
     <!-- TODO: Update blank fragment layout -->
@@ -13,17 +14,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="400dp"
-        android:text="debug use" />
+        android:text="debug use"
+        android:visibility="gone" />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="378dp">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/frag_3_llyt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
         </LinearLayout>
     </ScrollView>
@@ -34,6 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="100dp"
         android:layout_marginTop="400dp"
-        android:text="reset" />
+        android:text="reset"
+        android:visibility="gone" />
 
 </FrameLayout>

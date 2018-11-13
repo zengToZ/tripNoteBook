@@ -1,6 +1,8 @@
 package com.zz.trip_recorder_3;
 
 import android.content.Context;
+import android.location.Criteria;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.json.JSONObject;
 
@@ -27,7 +30,9 @@ import java.io.IOException;
  */
 public class Fragment3 extends Fragment {
     final private String TAG = "thisOne";
-    // TODO: Rename parameter arguments, choose names that match
+    private View frag3View;
+    private Context frag3context;
+
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -58,6 +63,25 @@ public class Fragment3 extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        Log.i(TAG, "frag3 on resume");
+        LinearLayout llyt = frag3View.findViewById(R.id.frag_3_llyt);
+        TextView batteryStatus = new TextView(frag3context);
+        batteryStatus.setEnabled(false);
+
+        //getPowerInfo(Criteria(LocationManager.GPS_PROVIDER))
+
+        //batteryStatus.setText();
+
+    }
+
+    private int getPowerInfo(Criteria criteria){
+        return criteria.getPowerRequirement();
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,66 +93,9 @@ public class Fragment3 extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View v = inflater.inflate(R.layout.fragment_fragment3, container, false);
         // Inflate the layout for this fragment
-
-        Button btn = v.findViewById(R.id.resetIni);
-        btn.setOnClickListener(new Button.OnClickListener(){
-            @Override
-            public void onClick(View v1) {
-                /** check iniFile**/
-                File file;
-                String fileName, JsonContent;
-                LinearLayout f = v.findViewById(R.id.frag_3_llyt);
-                Button b1 = new Button(v.getContext());
-                b1.setText("More content to come");
-                f.addView(b1);
-                try {
-                    for (int i = 100; i <= staticGlobal.getCurrTripID(); i++) {
-                        fileName = staticGlobal.getTripJsonName(i);
-                        file = new File(getActivity().getBaseContext().getFilesDir(), fileName);
-                        if (file.exists()) {
-                            JsonContent = staticGlobal.getJson(getActivity().getBaseContext(), fileName);
-                            final JSONObject jb = new JSONObject(JsonContent);
-                            Button b = new Button(v.getContext());
-                            b.setText(jb.getString("trip id"));
-                            b.setOnClickListener(new Button.OnClickListener(){
-                                @Override
-                                public void onClick(View v2) {
-                                    try{
-                                    Log.i(TAG,jb.toString(1));
-                                    }catch (Exception e){
-                                        Log.i(TAG,e.toString());
-                                    }
-                                }
-                            });
-                            f.addView(b);
-                        }
-                    }
-                }catch (Exception e){
-                    Log.i(TAG,e.toString());
-                }
-
-            }
-        });
-
-        Button btn2 = v.findViewById(R.id.rest_all);
-        btn2.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v2) {
-                try{
-                    staticGlobal.deleteIniFile();
-                }catch (IOException e){
-                    e.printStackTrace();
-                }
-                File file; for(int i=0;i<200;i++){file = new File(getActivity().getBaseContext().getFilesDir(), staticGlobal.getTripJsonName(i));if(file.exists()){file.delete(); } }
-            }
-        });
-
-
-
-
-        return v;
+        frag3View = inflater.inflate(R.layout.fragment_fragment3, container, false);
+        return frag3View;
     }
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
@@ -139,6 +106,7 @@ public class Fragment3 extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        frag3context = context;
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
@@ -165,4 +133,65 @@ public class Fragment3 extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
+
+    /*
+     Stashed buttons:
+     private void showBtns(View v){
+     Button btn = v.findViewById(R.id.resetIni);
+        btn.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v1) {
+
+            File file;
+            String fileName, JsonContent;
+            LinearLayout f = v.findViewById(R.id.frag_3_llyt);
+            Button b1 = new Button(v.getContext());
+                        b1.setText("More content to come");
+                        f.addView(b1);
+                        try {
+                for (int i = 100; i <= staticGlobal.getCurrTripID(); i++) {
+                    fileName = staticGlobal.getTripJsonName(i);
+                    file = new File(getActivity().getBaseContext().getFilesDir(), fileName);
+                    if (file.exists()) {
+                        JsonContent = staticGlobal.getJson(getActivity().getBaseContext(), fileName);
+                        final JSONObject jb = new JSONObject(JsonContent);
+                        Button b = new Button(v.getContext());
+                        b.setText(jb.getString("trip id"));
+                        b.setOnClickListener(new Button.OnClickListener(){
+                            @Override
+                            public void onClick(View v2) {
+                                try{
+                                    Log.i(TAG,jb.toString(1));
+                                }catch (Exception e){
+                                    Log.i(TAG,e.toString());
+                                }
+                            }
+                        });
+                        f.addView(b);
+                    }
+                }
+            }catch (Exception e){
+                Log.i(TAG,e.toString());
+            }
+
+        }
+                });
+
+                        Button btn2 = v.findViewById(R.id.rest_all);
+                        btn2.setOnClickListener(new Button.OnClickListener() {
+        @Override
+        public void onClick(View v2) {
+                try{
+                staticGlobal.deleteIniFile();
+                }catch (IOException e){
+                e.printStackTrace();
+                }
+                File file; for(int i=0;i<200;i++){file = new File(getActivity().getBaseContext().getFilesDir(), staticGlobal.getTripJsonName(i));if(file.exists()){file.delete(); } }
+                }
+                });
+     }
+
+     */
+
 }
