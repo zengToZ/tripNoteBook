@@ -1,6 +1,8 @@
 package com.zz.trip_recorder_3;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -20,10 +22,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.MediaController;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -57,7 +61,7 @@ import java.util.Locale;
  * Use the {@link Fragment1#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCallback,searchReceiver.Receiver {
+public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCallback,searchReceiver.Receiver,staticGlobal.valueModifiedListener {
 
     private View frag1View;
     private Context frag1context;
@@ -120,7 +124,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
             if (frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                     frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
                 updateLocation();
-                if(!cityName.equals(locale.CityName))
+                if(cityName==null || !cityName.equals(locale.CityName))
                     staticGlobal.setCityName(locale.CityName);
             }
         }
@@ -146,7 +150,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         m1.context = frag1context;
         m1.isFrag1 = true;
 
-        if(!cityName.equals("")){
+        if(cityName!=null){
             makeConnGoogle(cityName);
             if(googleSearchImgUrl!=null){
                 m2.title = googleSearchTitle;
@@ -206,6 +210,11 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
 
         //getVideo(frag1View);
 
+    }
+
+    @Override
+    public void onModified(){
+        onResume();
     }
 
     // update and get current location
@@ -466,6 +475,9 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         super.onAttach(context);
         Log.i(TAG,"on attach Frag1");
         frag1context = context;
+        if(staticGlobal.getUserName()==null){
+            createUserNameDlg();
+        }
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
@@ -479,6 +491,30 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         super.onDetach();
         locationManager.removeUpdates(this);
         mListener = null;
+    }
+
+    private void createUserNameDlg(){
+        final EditText input = new EditText(frag1context);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setText("RP");
+        input.setSelectAllOnFocus(true);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(frag1context)
+                .setTitle("What's your name? ^^")
+                .setView(input)
+                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        staticGlobal.setUserName(input.getText().toString());
+                    }
+                })
+                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        staticGlobal.setUserName("RP");
+                        dialog.cancel();
+                    }
+                });
+        builder.show();
     }
 
     /**

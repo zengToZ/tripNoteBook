@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -36,6 +37,8 @@ public class Activity_01 extends AppCompatActivity implements
         FragmentOnStartup.OnFragmentInteractionListener{
 
     final private static int REQUEST_ALL = 0xa1;
+
+    final private String APP_NAME = "zz_trip_notebook";
 
     final private String[] PERMISSIONS = {
              android.Manifest.permission.INTERNET,
@@ -77,16 +80,18 @@ public class Activity_01 extends AppCompatActivity implements
             actionBar.hide();
         setContentView(R.layout.activity_01);
 
-        //cleanUp();
-
         // for initialising
         staticGlobal.fDir = getApplication().getBaseContext().getFilesDir();
         staticGlobal.context = this;
-        staticGlobal.initializeIniFile();
 
-        if(staticGlobal.getUserName().equals("")){
-            createUserNameDlg();
+        SharedPreferences settings = getSharedPreferences(APP_NAME, 0);
+
+        if (settings.getBoolean("is_first_run", true)) {
+            //cleanUp();
+            staticGlobal.initializeIniFile();
+            settings.edit().putBoolean("is_first_run", false).commit();
         }
+
         /*---check all permissions--*/
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if(!hasPermissions(this, PERMISSIONS)){
@@ -130,30 +135,6 @@ public class Activity_01 extends AppCompatActivity implements
         return true;
     }
 
-    private void createUserNameDlg(){
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setText("RP");
-        input.setSelectAllOnFocus(true);
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setTitle("Give a name for the new trip")
-                .setView(input)
-                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        staticGlobal.setUserName(input.getText().toString());
-                    }
-                })
-                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        staticGlobal.setUserName(input.getText().toString());
-                        dialog.cancel();
-                    }
-                });
-        builder.show();
-    }
-
     @Override
     protected void onResume(){
         Log.i(TAG,"on Resume Act1");
@@ -183,11 +164,15 @@ public class Activity_01 extends AppCompatActivity implements
     }
 
     private void cleanUp(){
+        File file;
+        for(int i=0;i<1024;i++) {
+            file = new File(getApplication().getBaseContext().getFilesDir(), staticGlobal.getTripJsonName(i));
+            if(file.exists()) file.delete();
+        }
         try{
             staticGlobal.deleteIniFile();
         }catch (Exception e){
             e.printStackTrace();
         }
-        File file; for(int i=0;i<200;i++){file = new File(getApplication().getBaseContext().getFilesDir(), staticGlobal.getTripJsonName(i));if(file.exists()){file.delete(); } }
     }
 }

@@ -37,6 +37,9 @@ import static android.os.Environment.getExternalStoragePublicDirectory;
 public class staticGlobal {
     public static Context context;
     public static File fDir;
+
+    private static valueModifiedListener modifiedListener;
+
     //private static File iniFile = new File(Environment.getExternalStorageDirectory().toString()+"/trip_recorder_setting.ini");
     private final static File iniFile = new File(fDir, "settings.tn");
 
@@ -229,6 +232,7 @@ public class staticGlobal {
         INI.setLineSeparator("|");
         INI.set("Global Setting","userName",s);
         INI.save();
+        if(modifiedListener != null) modifiedListener.onModified();
     }
 
     public static String getUserName(){
@@ -316,6 +320,14 @@ public class staticGlobal {
 
         DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         manager.enqueue(request);
+    }
+
+    public void setValueModifiedListener(valueModifiedListener modifiedListener){
+        this.modifiedListener = modifiedListener;
+    }
+
+    public interface valueModifiedListener{
+        void onModified();
     }
 
 /*
