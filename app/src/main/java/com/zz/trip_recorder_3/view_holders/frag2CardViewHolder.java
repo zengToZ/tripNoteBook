@@ -38,6 +38,7 @@ public class frag2CardViewHolder extends RecyclerView.ViewHolder {
     public Context context;
     public boolean doDelet;
     public boolean firstEver;
+    public boolean isFrag1;
 
     private static String createNewTripName = Fragment1.locale.CityName+" "+staticGlobal.beautifulDate(null,true);
 
@@ -54,6 +55,7 @@ public class frag2CardViewHolder extends RecyclerView.ViewHolder {
         context = m.context;
         doDelet = m.doDelet;
         firstEver = m.firstEver;
+        isFrag1 = m.isFrag1;
 
         if(!doDelet){
             if(firstEver){
@@ -74,22 +76,24 @@ public class frag2CardViewHolder extends RecyclerView.ViewHolder {
                         v1.getContext().startActivity(intent);
                     }
                 });
-                background.setOnLongClickListener(new ImageView.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        Fragment2 fragment2 = Fragment2.newInstance("doDel",null,-1);
-                        try{
-                            final FragmentTransaction transaction = ((FragmentActivity)context).getSupportFragmentManager().beginTransaction();
-                            transaction.replace(R.id.main_container, fragment2);
-                            transaction.addToBackStack(null);
-                            transaction.commit();
+                if(!isFrag1){
+                    background.setOnLongClickListener(new ImageView.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            Fragment2 fragment2 = Fragment2.newInstance("doDel",null,-1);
+                            try{
+                                final FragmentTransaction transaction = ((FragmentActivity)context).getSupportFragmentManager().beginTransaction();
+                                transaction.replace(R.id.main_container, fragment2);
+                                transaction.addToBackStack(null);
+                                transaction.commit();
+                            }
+                            catch (Exception e){
+                                Log.i("thisOne",e.toString());
+                            }
+                            return true;
                         }
-                        catch (Exception e){
-                            Log.i("thisOne",e.toString());
-                        }
-                        return true;
-                    }
-                });
+                    });
+                }
             }
         }
         else {

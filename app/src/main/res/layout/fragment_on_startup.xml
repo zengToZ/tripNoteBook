@@ -5,15 +5,27 @@
     android:id="@+id/frag_3"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
     tools:context=".FragmentOnStartup">
 
-    <!-- TODO: Update blank fragment layout -->
-
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/startup_img"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:src="@mipmap/umbrella" />
+        android:src="@mipmap/umbrella"
+        android:visibility="visible" />
+
+    <TextView
+        android:id="@+id/startup_msg"
+        style="@style/Widget.AppCompat.TextView.SpinnerItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TRIP NOTEBOOK"
+        android:textColor="@color/common_google_signin_btn_text_dark_pressed"
+        android:textSize="20sp"
+        android:textStyle="bold|italic"
+        android:visibility="visible"
+        app:fontFamily="cursive" />
+
+
 </FrameLayout>

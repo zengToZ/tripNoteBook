@@ -14,15 +14,21 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.os.Environment.getExternalStoragePublicDirectory;
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class Activity_01 extends AppCompatActivity implements
         Fragment1.OnFragmentInteractionListener,
-        Fragment2.OnFragmentInteractionListener{
+        Fragment2.OnFragmentInteractionListener,
+        FragmentOnStartup.OnFragmentInteractionListener{
 
     final private static int REQUEST_ALL = 0xa1;
 
@@ -66,6 +72,8 @@ public class Activity_01 extends AppCompatActivity implements
             actionBar.hide();
         setContentView(R.layout.activity_01);
 
+        //cleanUp();
+
         // for initialising
         staticGlobal.fDir = getApplication().getBaseContext().getFilesDir();
         staticGlobal.context = this;
@@ -84,10 +92,22 @@ public class Activity_01 extends AppCompatActivity implements
                 Log.i(TAG,"new private directory picture folder created");
             }
         }
-
-        BottomNavigationView navigation = findViewById(R.id.navigation);
+        final BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
+        final FragmentOnStartup fragmentOnStartup =  FragmentOnStartup.newInstance(null,null);
+        getSupportFragmentManager().beginTransaction().add(R.id.main_container, fragmentOnStartup).commit();
+        final Fragment1 fragment1 =  Fragment1.newInstance(null,null);
+        getSupportFragmentManager().beginTransaction().add(R.id.main_container,fragment1).commit();
+        getSupportFragmentManager().beginTransaction().hide(fragment1).commit();
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                getSupportFragmentManager().beginTransaction().remove(fragmentOnStartup).commit();
+                getSupportFragmentManager().beginTransaction().show(fragment1).commit();
+            }
+        },2000);
     }
 
     // check permission since Android M version
@@ -106,8 +126,6 @@ public class Activity_01 extends AppCompatActivity implements
     protected void onResume(){
         Log.i(TAG,"on Resume Act1");
         super.onResume();
-        Fragment1 fragment1 =  Fragment1.newInstance(null,null);
-        getSupportFragmentManager().beginTransaction().add(R.id.main_container,fragment1).commit();
     }
 
     @Override
@@ -132,4 +150,12 @@ public class Activity_01 extends AppCompatActivity implements
         // by default
     }
 
+    private void cleanUp(){
+        try{
+            staticGlobal.deleteIniFile();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        File file; for(int i=0;i<200;i++){file = new File(getApplication().getBaseContext().getFilesDir(), staticGlobal.getTripJsonName(i));if(file.exists()){file.delete(); } }
+    }
 }

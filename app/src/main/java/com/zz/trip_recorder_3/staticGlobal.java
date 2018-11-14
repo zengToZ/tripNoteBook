@@ -1,5 +1,6 @@
 package com.zz.trip_recorder_3;
 
+import android.app.DownloadManager;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -42,14 +43,6 @@ public class staticGlobal {
     private final static String TAG = "thisOne";
 
     public final static String imgFolder = "tripNoteBook";
-
-    // The minimum distance to change Updates in meters
-    public static final long MIN_DISTANCE_UPDATES = 20; //  meters
-    public static final long URGENT_DISTANCE_UPDATES = (long)0.2; //  meters
-
-    // The minimum time between updates in milliseconds
-    public static final long MIN_TIME_UPDATES = 1000 * 60 * 60; // milliseconds - 1 hour
-    public static final long URGENT_TIME_UPDATES = 1000; // milliseconds - 1 sec
 
     /*
     * ini attribute:
@@ -258,6 +251,19 @@ public class staticGlobal {
     public static boolean isGooglePlayServicesAvailable(Context context) {
         int status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
         return status == ConnectionResult.SUCCESS;
+    }
+
+    private void DLfromURL(Context context, String url, String fileName) {
+        Uri uri = Uri.parse(url);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
+        //request.setTitle("");
+        request.allowScanningByMediaScanner();
+        //request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+        //request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalFilesDir(context,Environment.DIRECTORY_PICTURES,fileName);
+
+        DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        manager.enqueue(request);
     }
 
 /*

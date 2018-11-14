@@ -260,6 +260,7 @@ public class Fragment2 extends Fragment {
                     }
                     m.context = f2context;
                     m.doDelet = doDel;
+                    //m.isFrag1 = false;
                     cardList.add(m);
                 }
             }

@@ -63,6 +63,10 @@
             android:name=".Activity_Triplist"
             android:theme="@style/DayNight" />
         <activity android:name=".ExtraViewer.ImageViewer" />
+
+        <service android:name=".googleSearchModule.doConnect"
+            android:exported="false"></service>
+
     </application>
 
 </manifest>

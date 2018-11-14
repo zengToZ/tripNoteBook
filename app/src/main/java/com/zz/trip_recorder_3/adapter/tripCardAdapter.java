@@ -54,7 +54,7 @@ public class tripCardAdapter extends RecyclerView.Adapter<tripCardViewHolder> {
                 }
 
                 tripCardViewHolder.tripCardBg.setImageBitmap(bitmap);
-                tripCardViewHolder.tripCardBg.setAlpha(150);
+                tripCardViewHolder.tripCardBg.setAlpha(180);
                 tripCardViewHolder.tripCardBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 Log.i("thisOne", "showing: " + tCM.background.toString()+bitmap.toString());
             }
@@ -64,7 +64,7 @@ public class tripCardAdapter extends RecyclerView.Adapter<tripCardViewHolder> {
             }
             else{
                 tripCardViewHolder.tripCardBg.setImageResource(mipmap.umbrella);
-                tripCardViewHolder.tripCardBg.setAlpha(150);
+                tripCardViewHolder.tripCardBg.setAlpha(180);
                 tripCardViewHolder.tripCardBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 Log.i("thisOne", "showing: default trip card img");
             }

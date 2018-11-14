@@ -108,7 +108,6 @@ public class Activity_Triplist extends AppCompatActivity {
 
         File file = new File(getApplication().getBaseContext().getFilesDir(), staticGlobal.getTripJsonName(id));
         if(file.exists()){
-
             //String jsonStr = staticGlobal.getJson(getApplication().getBaseContext(),staticGlobal.getTripJsonName(id));
             try {
                 // unitID: 101_2018-01-01
@@ -166,7 +165,6 @@ public class Activity_Triplist extends AppCompatActivity {
                         if(name.length()>=14)
                             t.dateTitle = name.substring(name.length()-10,name.length());
                         cardList.add(t);
-
                         jsonReader.endObject();
                     }
                     else if(JsonToken.STRING.equals(nextToken)){
@@ -191,6 +189,9 @@ public class Activity_Triplist extends AppCompatActivity {
         }
 
         if(doDel){
+
+            if(cardList.size()==0)
+                onBackPressed();
             Button back_btn = findViewById(R.id.triplist_back);
             back_btn.setVisibility(View.VISIBLE);
             back_btn.setBackgroundResource(android.R.color.transparent);

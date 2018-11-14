@@ -51,13 +51,13 @@ public class frag2CardAdapter extends RecyclerView.Adapter<frag2CardViewHolder> 
                 }
 
                 frag2CardViewHolder.background.setImageBitmap(bitmap);
-                frag2CardViewHolder.background.setAlpha(150);
+                frag2CardViewHolder.background.setAlpha(180);
                 frag2CardViewHolder.background.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 Log.i("thisOne", "showing: " + CM.background.toString()+bitmap.toString());
             }
             else{
                 frag2CardViewHolder.background.setImageResource(R.mipmap.umbrella);
-                frag2CardViewHolder.background.setAlpha(150);
+                frag2CardViewHolder.background.setAlpha(180);
                 frag2CardViewHolder.background.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 Log.i("thisOne", "showing: default card img");
             }
@@ -89,7 +89,7 @@ public class frag2CardAdapter extends RecyclerView.Adapter<frag2CardViewHolder> 
     public frag2CardViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View itemView = LayoutInflater.
                 from(viewGroup.getContext()).
-                inflate(R.layout.card_layout, viewGroup, false);
+                inflate(R.layout.frag2_card_layout, viewGroup, false);
         frag2CardViewHolder f = new frag2CardViewHolder(itemView,frag2CardModelList.get(count));    // pass frag2CardModel by list sequence order
         count++;
         return f;

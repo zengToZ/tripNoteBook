@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
+import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -12,6 +13,8 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -35,6 +38,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.zz.trip_recorder_3.adapter.frag2CardAdapter;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;
 import com.zz.trip_recorder_3.data_models.localeModel;
+import com.zz.trip_recorder_3.googleSearchModule.doConnect;
+import com.zz.trip_recorder_3.googleSearchModule.searchReceiver;
 
 import org.json.JSONObject;
 
@@ -52,7 +57,7 @@ import java.util.Locale;
  * Use the {@link Fragment1#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCallback {
+public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCallback,searchReceiver.Receiver {
 
     private View frag1View;
     private Context frag1context;
@@ -64,6 +69,11 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
 
     private VideoView frag1Video;
 
+    private searchReceiver receriver;
+    private static String googleSearchImgUrl;
+    private static String googleSearchTitle;
+
+    private LocationManager locationManager;
     public static localeModel locale;   // public because might use it in fragment 2
     private static Geocoder geocoder;
     private double latitude;
@@ -105,18 +115,39 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         super.onResume();
         Log.i(TAG,"on Resume Frag2");
         // locale service start on..
-        updateLocation();
-
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if (frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                updateLocation();
+            }
+        }
         List<frag2CardModel> cardList = new ArrayList();
         // showing just one card on current editing status
         frag2CardModel m1 = new frag2CardModel();
-        String showingTitle = "Now at ";
-        if(locale.Address1 != null) showingTitle += locale.Address1 + " ";
-        if(locale.CityName != null) showingTitle += locale.CityName + " ";
-        if(locale.State != null) showingTitle += locale.State + " ";
-        if(locale.Country != null) showingTitle += locale.Country;
+        frag2CardModel m2 = new frag2CardModel();
+        String showingTitle = "";
+        if(locale != null) {
+            showingTitle += "Now at ";
+            if(locale.Address1 != null) showingTitle += locale.Address1 + " ";
+            if(locale.CityName != null) {
+                showingTitle += locale.CityName + " ";
+                makeConnGoogle(locale.CityName);
+                if(googleSearchImgUrl!=null){
+                    m2.title = googleSearchTitle;
+                    m2.background = Uri.parse(googleSearchImgUrl);
+                }
+            }
+            if(locale.State != null) {
+                showingTitle += locale.State + " ";
+            }
+            if(locale.Country != null) {
+                showingTitle += locale.Country;
+            }
+        }
         m1.title = showingTitle;
         m1.context = frag1context;
+        m1.isFrag1 = true;
+
 
         int showID = staticGlobal.getCurrShowingTripID();
         String lastEditID = staticGlobal.getCurrEditorID();
@@ -151,6 +182,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
                 if(jb.optString("trip name") != null)
                     m1.description = jb.getString("trip name");
                 cardList.add(m1);
+                cardList.add(m2);
             } catch (Exception e) {
                 Log.i(TAG, "show current trip id: " + e.toString());
             }
@@ -183,53 +215,78 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
                 return;
             }
         }
-        LocationManager locationManager = (LocationManager) frag1context.getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) frag1context.getSystemService(Context.LOCATION_SERVICE);
         // Getting GPS status
+        if(locationManager == null) return;
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         // Getting network status
         boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        // Getting third party app required status
+        boolean isPassiveEnabled = locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER);
 
         // case when all disabled
         Location location;
-        if (!isGPSEnabled && !isNetworkEnabled){
+        if (!isGPSEnabled && !isNetworkEnabled && !isPassiveEnabled){
             Toast.makeText(frag1context, "No available location service!\nEither turn on GPS or network", Toast.LENGTH_LONG).show();
             return;
         }
         // case when either enabled, to choose a newer one, but update request send by GPS first
         else {
             if (isGPSEnabled) {
-                locationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER,
-                        staticGlobal.MIN_TIME_UPDATES,
-                        staticGlobal.MIN_DISTANCE_UPDATES, this);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0, this);
                 Log.i(TAG, "requestLocationUpdates by GPS");
-            } else {
-                locationManager.requestLocationUpdates(
-                        LocationManager.NETWORK_PROVIDER,
-                        staticGlobal.MIN_TIME_UPDATES,
-                        staticGlobal.MIN_DISTANCE_UPDATES, this);
+            } else if(isNetworkEnabled) {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,0,0, this);
                 Log.i(TAG, "requestLocationUpdates by Network");
+            } else{
+                locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER,0,0, this);
+                Log.i(TAG, "requestLocationUpdates by passive");
             }
             Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             Location locationNet = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            Location locationPassive = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
 
+            if(locationGPS == null && locationNet == null && locationPassive == null){
+                locationManager.requestSingleUpdate(new Criteria(), new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location loc) {
+                        getLocale(loc);
+                        Log.i(TAG,"latitude " + latitude + "|longitude " + longitude + "|city "+ locale.CityName + "|country "+ locale.Country);
+                    }
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) { }
+                    @Override
+                    public void onProviderEnabled(String provider) { }
+                    @Override
+                    public void onProviderDisabled(String provider) {
+                        Toast.makeText(frag1context, "Location Provider Disabled\nEither turn on GPS or network", Toast.LENGTH_LONG).show();
+                    }
+                },null);
+            }
             long GPSLocationTime = 0;
             if (locationGPS != null)
                 GPSLocationTime = locationGPS.getTime();
-            else {
-                locationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER,
-                        staticGlobal.URGENT_TIME_UPDATES,
-                        staticGlobal.URGENT_DISTANCE_UPDATES, this);
-                Log.i(TAG, "requestLocationUpdates by GPS");
-            }
+
+            long PassiveLocationTime = 0;
+            if(locationPassive != null)
+                PassiveLocationTime = locationPassive.getTime();
 
             long NetLocationTime = 0;
             if (locationNet != null)
                 NetLocationTime = locationNet.getTime();
 
-            if (GPSLocationTime - NetLocationTime > 0) location = locationGPS;
-            else location = locationNet;
+            long newerTime = 0;
+            if(GPSLocationTime == Math.max(GPSLocationTime,NetLocationTime)){
+                location = locationGPS;
+                newerTime = GPSLocationTime;
+            }
+            else{
+                location = locationNet;
+                newerTime = NetLocationTime;
+            }
+            if(PassiveLocationTime == Math.max(newerTime,PassiveLocationTime)){
+                location = locationPassive;
+            }
         }
         getLocale(location);
         updateMap();
@@ -332,9 +389,6 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         }
     }
 
-
-
-
     private void getVideo(View v){
         frag1Video = v.findViewById(R.id.frag1Video);
         frag1Video.setVideoPath("http://www.html5videoplayer.net/videos/toystory.mp4");
@@ -353,6 +407,26 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
                 frag1Video.start();
             }
         });
+    }
+
+    private void makeConnGoogle(String searchStr){
+        int rand = (int)(Math.random()*7);  // 7 is the lucky number =)
+        receriver = new searchReceiver(new Handler());
+        receriver.setmReceiver(this);
+        Intent intent = new Intent(frag1context, doConnect.class);
+        intent.putExtra("searchString",searchStr);
+        intent.putExtra("receiverTag",receriver);
+        intent.putExtra("searchIdx",0);
+        if(getActivity()!=null)
+            getActivity().getBaseContext().startService(intent);
+    }
+
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData) {
+        googleSearchImgUrl = resultData.getString("receivedURL");
+        googleSearchTitle = resultData.getString("title");
+        Toast.makeText(frag1context,googleSearchImgUrl+googleSearchTitle , Toast.LENGTH_LONG).show();
+        Log.i(TAG, "Link got!");
     }
 
 
@@ -396,6 +470,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
     @Override
     public void onDetach() {
         super.onDetach();
+        locationManager.removeUpdates(this);
         mListener = null;
     }
 
