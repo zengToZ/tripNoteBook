@@ -61,7 +61,7 @@ import java.util.Locale;
  * Use the {@link Fragment1#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCallback,searchReceiver.Receiver,staticGlobal.valueModifiedListener {
+public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCallback,searchReceiver.Receiver {
 
     private View frag1View;
     private Context frag1context;
@@ -159,7 +159,6 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         }
         m2.isFrag1 = true;
 
-
         int showID = staticGlobal.getCurrShowingTripID();
         String lastEditID = staticGlobal.getCurrEditorID();
         if(showID == -1){
@@ -210,11 +209,6 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
 
         //getVideo(frag1View);
 
-    }
-
-    @Override
-    public void onModified(){
-        onResume();
     }
 
     // update and get current location
@@ -475,6 +469,15 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         super.onAttach(context);
         Log.i(TAG,"on attach Frag1");
         frag1context = context;
+
+        staticGlobal sg = new staticGlobal();
+        sg.setValueModifiedListener(new staticGlobal.valueModifiedListener() {
+            @Override
+            public void onModified() {
+                onResume();
+            }
+        });
+
         if(staticGlobal.getUserName()==null){
             createUserNameDlg();
         }
