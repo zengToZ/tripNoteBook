@@ -365,7 +365,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                             ImageView iv = addImg(imgUri);
                             LinearLayout.LayoutParams thislayout2 = new LinearLayout.LayoutParams(
                                     LinearLayout.LayoutParams.MATCH_PARENT,
-                                    600);
+                                    LinearLayout.LayoutParams.MATCH_PARENT);
                             linearLayout.addView(iv,-1,thislayout2);
 
                             // create focus frame for deleting
@@ -621,7 +621,8 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
             }
         });
         separator.setBackgroundResource(R.mipmap.separator);
-        LinearLayout.LayoutParams slayout = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 50);
+        separator.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        LinearLayout.LayoutParams slayout = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 40);
         linearLayout.addView(separator, position, slayout);
     }
 
