@@ -32,7 +32,7 @@ import java.util.List;
 public class Activity_Triplist extends AppCompatActivity {
     final private static String TAG = "thisOne";
 
-    private static int id = -1;
+    private int id = -1;
     private boolean doDel = false;
     private static String createNewTripName;
 
