@@ -322,8 +322,8 @@ public class staticGlobal {
         manager.enqueue(request);
     }
 
-    public void setValueModifiedListener(valueModifiedListener modifiedListener){
-        this.modifiedListener = modifiedListener;
+    public static void setValueModifiedListener(valueModifiedListener valueModifiedListener){
+        modifiedListener = valueModifiedListener;
     }
 
     public interface valueModifiedListener{

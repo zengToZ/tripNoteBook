@@ -64,7 +64,7 @@ public class tripCardViewHolder extends RecyclerView.ViewHolder{
                 public boolean onLongClick(View v1) {
                     Intent intent = new Intent(v1.getContext(), Activity_Triplist.class);
                     intent.putExtra("doDel",true);
-                    //intent.putExtra("tripPackgeID",parentID);  // tripPackgeID to Activity_Triplist
+                    intent.putExtra("tripPackgeID",parentID);  // tripPackgeID to Activity_Triplist
                     //intent.putExtra("unitID",id);
                     /*intent.putExtra("parentID",parentID);
                     intent.putExtra("isEdit",false); // edit mode, need reload file*/

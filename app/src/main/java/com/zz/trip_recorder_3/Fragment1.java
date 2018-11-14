@@ -132,7 +132,9 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         // showing just one card on current editing status
         frag2CardModel m1 = new frag2CardModel();
         frag2CardModel m2 = new frag2CardModel();
-        String showingTitle = "Hi, "+staticGlobal.getUserName();
+        String showingTitle = "";
+        if(staticGlobal.getUserName()!=null)
+            showingTitle += "Hi, "+staticGlobal.getUserName();
         if(locale != null) {
             showingTitle += "\nNow at ";
             if(locale.Address1 != null) showingTitle += locale.Address1 + " ";
@@ -469,9 +471,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         super.onAttach(context);
         Log.i(TAG,"on attach Frag1");
         frag1context = context;
-
-        staticGlobal sg = new staticGlobal();
-        sg.setValueModifiedListener(new staticGlobal.valueModifiedListener() {
+        staticGlobal.setValueModifiedListener(new staticGlobal.valueModifiedListener() {
             @Override
             public void onModified() {
                 onResume();
@@ -500,6 +500,9 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         final EditText input = new EditText(frag1context);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setText("RP");
+        input.setFocusable(true);
+        input.setFocusableInTouchMode(true);
+        input.requestFocus();
         input.setSelectAllOnFocus(true);
         final AlertDialog.Builder builder = new AlertDialog.Builder(frag1context)
                 .setTitle("What's your name? ^^")

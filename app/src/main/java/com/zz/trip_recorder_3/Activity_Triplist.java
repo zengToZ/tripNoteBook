@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.zz.trip_recorder_3.adapter.tripCardAdapter;
 import com.zz.trip_recorder_3.data_models.tripCardModel;
@@ -68,6 +69,9 @@ public class Activity_Triplist extends AppCompatActivity {
                 Log.i(TAG,e.toString());
             }
         }
+        else{
+            id = getIntent().getExtras().getInt("tripPackgeID");
+        }
 
         Log.i(TAG,"on Create trip list");
     }
@@ -91,13 +95,9 @@ public class Activity_Triplist extends AppCompatActivity {
 
         List<tripCardModel> cardList = new ArrayList();
 
-        if(id<0){
-            id = getIntent().getExtras().getInt("tripPackgeID");
-        }
-
         if(getIntent().getBooleanExtra("doDel",false)){
-            //unitID = getIntent().getStringExtra("unitID");
             doDel = true;
+            id = getIntent().getExtras().getInt("tripPackgeID");
         }
 
         if(getIntent().getBooleanExtra("doneDel",false)){
@@ -172,7 +172,12 @@ public class Activity_Triplist extends AppCompatActivity {
                         if(name.equals("trip name")){
                             if (actionBar!=null){
                                 actionBar.setDisplayHomeAsUpEnabled(true);
-                                actionBar.setTitle(value);
+                                if(doDel){
+                                    actionBar.setTitle("Choose to Delete");
+                                    Toast.makeText(this, "Choose to delete record", Toast.LENGTH_LONG).show();
+                                }
+                                else
+                                    actionBar.setTitle(value);
                             }
                         }
                         Log.i(TAG,value);

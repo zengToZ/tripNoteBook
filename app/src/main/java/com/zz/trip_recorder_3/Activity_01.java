@@ -89,7 +89,7 @@ public class Activity_01 extends AppCompatActivity implements
         if (settings.getBoolean("is_first_run", true)) {
             //cleanUp();
             staticGlobal.initializeIniFile();
-            settings.edit().putBoolean("is_first_run", false).commit();
+            settings.edit().putBoolean("is_first_run", false).apply();
         }
 
         /*---check all permissions--*/

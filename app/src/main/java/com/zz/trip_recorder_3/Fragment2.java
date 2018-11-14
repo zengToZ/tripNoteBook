@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.zz.trip_recorder_3.adapter.frag2CardAdapter;
 import com.zz.trip_recorder_3.data_models.frag2CardModel;
@@ -45,7 +46,7 @@ public class Fragment2 extends Fragment {
     private String mParam1;
     private String mParam2;
     private int Trip_id_forDel;
-    private Context f2context;
+    private Context frag2context;
     private View view;
     private static boolean DoDel = false;
 
@@ -118,7 +119,7 @@ public class Fragment2 extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         createNewTripName = staticGlobal.getCityName()+" "+staticGlobal.beautifulDate(null,true);
-        f2context = context;
+        frag2context = context;
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
@@ -131,6 +132,7 @@ public class Fragment2 extends Fragment {
     public void onResume(){
         super.onResume();
         if(mParam1!=null && mParam1.equals("doDel")){
+            Toast.makeText(frag2context, "Choose to delete record", Toast.LENGTH_LONG).show();
             DoDel = true;
             mParam1 = null;
         }
@@ -171,17 +173,17 @@ public class Fragment2 extends Fragment {
     }
 
     private void createTypeNewNameDlg(){
-        final EditText input = new EditText(f2context);
+        final EditText input = new EditText(frag2context);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setText(createNewTripName);
         input.setSelectAllOnFocus(true);
-        final AlertDialog.Builder builder = new AlertDialog.Builder(f2context)
+        final AlertDialog.Builder builder = new AlertDialog.Builder(frag2context)
                 .setTitle("Give a name for the new trip")
                 .setView(input)
                 .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(f2context, Activity_Triplist.class);
+                        Intent intent = new Intent(frag2context, Activity_Triplist.class);
                         intent.putExtra("isNew",true);
                         intent.putExtra("newTripID",staticGlobal.getCurrTripID()+1);
                         intent.putExtra("createNewTripName", input.getText().toString());
@@ -258,7 +260,7 @@ public class Fragment2 extends Fragment {
                     if(jb.opt("trip name")!=null){
                         m.description = jb.getString("trip name");
                     }
-                    m.context = f2context;
+                    m.context = frag2context;
                     m.doDelet = doDel;
                     //m.isFrag1 = false;
                     cardList.add(m);
@@ -281,7 +283,7 @@ public class Fragment2 extends Fragment {
     // create ok-cancel alert box
     private void createAlertDlg(String title, String message, String Y, String N, String DelFile){
         final String delFile = DelFile;
-        final AlertDialog alertDialog = new AlertDialog.Builder(f2context)
+        final AlertDialog alertDialog = new AlertDialog.Builder(frag2context)
                 .setCancelable(false)
                 .setTitle(title)
                 .setMessage(message)
