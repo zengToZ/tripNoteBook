@@ -2,6 +2,7 @@ package com.zz.trip_recorder_3;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -125,6 +126,12 @@ public class Activity_Viewer extends AppCompatActivity {
         }catch (Exception e){
             Log.i(TAG, "Viewer error at reading Json file: "+ e.toString());
         }
+
+        TextView endText = new TextView(this);
+        endText.setText("by "+staticGlobal.getUserName());
+        endText.setTypeface(endText.getTypeface(),Typeface.ITALIC);
+        LinearLayout.LayoutParams thislayout0 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+        linearLayout.addView(endText,-1,thislayout0);
 
         Button btn = new Button(this);
         btn.setBackgroundResource(android.R.color.transparent);

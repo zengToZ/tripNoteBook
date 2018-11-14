@@ -1,7 +1,10 @@
 package com.zz.trip_recorder_3;
 
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -12,9 +15,11 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -79,6 +84,9 @@ public class Activity_01 extends AppCompatActivity implements
         staticGlobal.context = this;
         staticGlobal.initializeIniFile();
 
+        if(staticGlobal.getUserName().equals("")){
+            createUserNameDlg();
+        }
         /*---check all permissions--*/
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if(!hasPermissions(this, PERMISSIONS)){
@@ -120,6 +128,30 @@ public class Activity_01 extends AppCompatActivity implements
             }
         }
         return true;
+    }
+
+    private void createUserNameDlg(){
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setText("RP");
+        input.setSelectAllOnFocus(true);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Give a name for the new trip")
+                .setView(input)
+                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        staticGlobal.setUserName(input.getText().toString());
+                    }
+                })
+                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        staticGlobal.setUserName(input.getText().toString());
+                        dialog.cancel();
+                    }
+                });
+        builder.show();
     }
 
     @Override

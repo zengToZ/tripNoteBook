@@ -117,7 +117,7 @@ public class Fragment2 extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        createNewTripName = Fragment1.locale.CityName+" "+staticGlobal.beautifulDate(null,true);
+        createNewTripName = staticGlobal.getCityName()+" "+staticGlobal.beautifulDate(null,true);
         f2context = context;
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;

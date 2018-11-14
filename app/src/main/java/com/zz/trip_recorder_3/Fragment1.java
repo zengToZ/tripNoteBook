@@ -115,27 +115,25 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         super.onResume();
         Log.i(TAG,"on Resume Frag2");
         // locale service start on..
+        String cityName = staticGlobal.getCityName();
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if (frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                     frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
                 updateLocation();
+                if(!cityName.equals(locale.CityName))
+                    staticGlobal.setCityName(locale.CityName);
             }
         }
         List<frag2CardModel> cardList = new ArrayList();
         // showing just one card on current editing status
         frag2CardModel m1 = new frag2CardModel();
         frag2CardModel m2 = new frag2CardModel();
-        String showingTitle = "";
+        String showingTitle = "Hi, "+staticGlobal.getUserName();
         if(locale != null) {
-            showingTitle += "Now at ";
+            showingTitle += "\nNow at ";
             if(locale.Address1 != null) showingTitle += locale.Address1 + " ";
             if(locale.CityName != null) {
                 showingTitle += locale.CityName + " ";
-                makeConnGoogle(locale.CityName);
-                if(googleSearchImgUrl!=null){
-                    m2.title = googleSearchTitle;
-                    m2.background = Uri.parse(googleSearchImgUrl);
-                }
             }
             if(locale.State != null) {
                 showingTitle += locale.State + " ";
@@ -147,6 +145,15 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         m1.title = showingTitle;
         m1.context = frag1context;
         m1.isFrag1 = true;
+
+        if(!cityName.equals("")){
+            makeConnGoogle(cityName);
+            if(googleSearchImgUrl!=null){
+                m2.title = googleSearchTitle;
+                m2.background = Uri.parse(googleSearchImgUrl);
+            }
+        }
+        m2.isFrag1 = true;
 
 
         int showID = staticGlobal.getCurrShowingTripID();

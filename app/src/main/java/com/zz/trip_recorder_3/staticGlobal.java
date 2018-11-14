@@ -129,13 +129,17 @@ public class staticGlobal {
         return result;
     }
 
-    // region: initilize file part...:
+    // region: initialize file part...:
     public static void initializeIniFile() {
         try{
             File ff = context.getFileStreamPath(iniFile.getName());
             if(!ff.exists()) {
                 iniHelper_tools currentIniFile = new iniHelper_tools(iniFile,context);
                 currentIniFile.setLineSeparator("|");
+                currentIniFile.set("Global Setting","userName", ""); // initialized with empty string
+                currentIniFile.set("Global Setting","cityName", ""); // save current location
+                currentIniFile.set("Global Setting","stateName", ""); // save current location
+                currentIniFile.set("Global Setting","countryName", ""); // save current location
                 currentIniFile.set("Global Setting","isNewTripOpen","false");
                 currentIniFile.set("Global Setting","tripCount",0);
                 currentIniFile.set("Global Setting","currentTripID",100); // start with 101
@@ -220,6 +224,54 @@ public class staticGlobal {
         return (String)INI.get("Global Setting","currentEditorID");
     }
 
+    public static void setUserName(String s){
+        iniHelper_tools INI = new iniHelper_tools(iniFile,context);
+        INI.setLineSeparator("|");
+        INI.set("Global Setting","userName",s);
+        INI.save();
+    }
+
+    public static String getUserName(){
+        iniHelper_tools INI = new iniHelper_tools(iniFile, context);
+        return (String)INI.get("Global Setting","userName");
+    }
+
+    public static void setCityName(String s){
+        iniHelper_tools INI = new iniHelper_tools(iniFile,context);
+        INI.setLineSeparator("|");
+        INI.set("Global Setting","cityName",s);
+        INI.save();
+    }
+
+    public static String getCityName(){
+        iniHelper_tools INI = new iniHelper_tools(iniFile, context);
+        return (String)INI.get("Global Setting","cityName");
+    }
+
+    public static void setStateName(String s){
+        iniHelper_tools INI = new iniHelper_tools(iniFile,context);
+        INI.setLineSeparator("|");
+        INI.set("Global Setting","stateName",s);
+        INI.save();
+    }
+
+    public static String getStateName(){
+        iniHelper_tools INI = new iniHelper_tools(iniFile, context);
+        return (String)INI.get("Global Setting","stateName");
+    }
+
+    public static void setCountryName(String s){
+        iniHelper_tools INI = new iniHelper_tools(iniFile,context);
+        INI.setLineSeparator("|");
+        INI.set("Global Setting","countryName",s);
+        INI.save();
+    }
+
+    public static String getCountryName(){
+        iniHelper_tools INI = new iniHelper_tools(iniFile, context);
+        return (String)INI.get("Global Setting","countryName");
+    }
+
     public static Uri getImageUrlWithAuthority(Context context, Uri uri) {
         InputStream is = null;
         OutputStream os = null;
@@ -253,7 +305,7 @@ public class staticGlobal {
         return status == ConnectionResult.SUCCESS;
     }
 
-    private void DLfromURL(Context context, String url, String fileName) {
+    private void downloadFromURL(Context context, String url, String fileName) {
         Uri uri = Uri.parse(url);
         DownloadManager.Request request = new DownloadManager.Request(uri);
         //request.setTitle("");
