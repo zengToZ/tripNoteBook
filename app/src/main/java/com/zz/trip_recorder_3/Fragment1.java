@@ -85,67 +85,128 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
     private VideoView frag1Video;
 
     private searchReceiver receriver;
-    private boolean isStale = true;
+    private static boolean isStale = true;
+    private String showingTitle;
     //private String oldGoogleSearchImgUrl;
     private static String googleSearchImgUrl;
     private static String googleSearchTitle;
 
     private LocationManager locationManager;
     private String cityName;
-    String showingTitle = "";
     public static localeModel locale;   // public because might use it in fragment 2
     private static Geocoder geocoder;
     private double latitude;
     private double longitude;
 
     private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
     private String mParam1;
-    private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    /*----------------------system default constructor and listeners-------------------------------*/
 
     public Fragment1() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment Fragment1.
-     */
-
-    public static Fragment1 newInstance(String param1, String param2) {
+    public static Fragment1 newInstance(String param1) {
         Fragment1 fragment = new Fragment1();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public interface OnFragmentInteractionListener {
+        void onFragmentInteraction(Uri uri);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        frag1View = inflater.inflate(R.layout.fragment_fragment1, container, false);
+        // Inflate the layout for this fragment
+        return frag1View;
+    }
+
+    // TODO: Rename method, update argument and hook method into UI event
+    public void onButtonPressed(Uri uri) {
+        if (mListener != null) {
+            mListener.onFragmentInteraction(uri);
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Log.i(TAG,"on attach Frag1");
+        frag1context = context;
+        staticGlobal.setValueModifiedListener(new staticGlobal.valueModifiedListener() {
+            // on setUserName
+            @Override
+            public void onModified_01() {
+                updateTopTwoCardsView();
+            }
+            // on setGoogleSearchImgUri
+            @Override
+            public void onModified_02(){
+                updateTopTwoCardsView();
+            }
+            // on setCityName
+            @Override
+            public void onModified_03(){
+                makeConnGoogle(locale.CityName);
+                staticGlobal.setGoogleSearchImgUrl(googleSearchImgUrl);
+            }
+        });
+
+        if(staticGlobal.getUserName()==null){
+            createUserNameDlg();
+        }
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        locationManager.removeUpdates(this);
+        mListener = null;
     }
 
     @Override
     public void onResume(){
         super.onResume();
-        Log.i(TAG,"on Resume Frag2");
+        Log.i(TAG,"on Resume Frag2, open count: "+mParam1);
         // locale service start on..
         cityName = staticGlobal.getCityName();
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if (frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                     frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
                 updateLocation();
-                if(cityName==null || !cityName.equals(locale.CityName)){
+                if(locale.CityName!=null&&(cityName==null || !cityName.equals(locale.CityName))){
                     staticGlobal.setCityName(locale.CityName);
                     cityName = staticGlobal.getCityName();
                 }
             }
         }
 
+
+        showingTitle = "";
         if(staticGlobal.getUserName()!=null)
             showingTitle += "Hi, "+staticGlobal.getUserName();
         if(locale != null) {
@@ -169,7 +230,9 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         //getVideo(frag1View);
 
     }
+    /*----------------------------------------------------------------------------------------------*/
 
+    /*------------------------------------Update Two cards at top-----------------------------------*/
     private void updateTopTwoCardsView(){
         List<frag2CardModel> cardList = new ArrayList();
         frag2CardModel m1 = new frag2CardModel();
@@ -178,11 +241,11 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         m1.context = frag1context;
         m1.isFrag1 = true;
         m2.isFrag1 = true;
+        m2.isStatic = true;
 
         if(cityName!=null){
             if(isStale){
                 makeConnGoogle(cityName);
-                isStale = false;
             }
             if(googleSearchImgUrl!=null && googleSearchImgUrl!=staticGlobal.getGoogleSearchImgUrl()){
                 staticGlobal.setGoogleSearchImgUrl(googleSearchImgUrl);
@@ -201,7 +264,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
                 Bitmap bmp = BitmapFactory.decodeStream(is);
                 m2.hidden_BG = bmp;
             }catch (Exception e) {
-                Log.i(TAG, "XXXX:" + e.toString());
+                Log.i(TAG, "set m2 bitmap: " + e.toString());
             }
         }
 
@@ -254,8 +317,9 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         RecyclerView.Adapter adapter = new frag2CardAdapter(cardList, this.getContext());
         recyclerView.setAdapter(adapter);
     }
+    /*----------------------------------------------------------------------------------------------*/
 
-    // update and get current location
+    /*-------------------------------------Update Location module-----------------------------------*/
     private void updateLocation() {
         locale = new localeModel();
         geocoder = new Geocoder(frag1context, Locale.getDefault());
@@ -385,7 +449,9 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {}
+    /*----------------------------------------------------------------------------------------------*/
 
+    /*------------------------------------Update Map module-----------------------------------------*/
     private void updateMap() throws NullPointerException{
         FragmentManager fragmentManager = getFragmentManager();
         try{
@@ -414,15 +480,19 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
             }
             googleMap.setMyLocationEnabled(true);
             googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            googleMap.setIndoorEnabled(true);
             LatLng currLocale = new LatLng(latitude,longitude);
             MarkerOptions MO = new MarkerOptions().position(currLocale).title(locale.CityName).snippet(locale.Address1);
             googleMap.addMarker(MO);
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currLocale,14f));
             UiSettings uiSettings = googleMap.getUiSettings();
             uiSettings.setZoomControlsEnabled(true);
+            uiSettings.setCompassEnabled(true);
         }
     }
+    /*----------------------------------------------------------------------------------------------*/
 
+    /*---------callback for Re-request permission if not granted for location and map---------------*/
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantedResults){
 
@@ -441,7 +511,9 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
                 break;
         }
     }
+    /*----------------------------------------------------------------------------------------------*/
 
+    /*--------------Get Video-----------------------------------------------------------------------*/
     private void getVideo(View v){
         frag1Video = v.findViewById(R.id.frag1Video);
         frag1Video.setVideoPath("http://www.html5videoplayer.net/videos/toystory.mp4");
@@ -461,16 +533,16 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
             }
         });
     }
+    /*----------------------------------------------------------------------------------------------*/
 
+    /*--------------------------------make google connection and search for string------------------*/
     private void makeConnGoogle(String searchStr){
+        isStale = false;
         receriver = new searchReceiver(new Handler());
         receriver.setmReceiver(this);
         Intent intent = new Intent(frag1context, doConnect.class);
         intent.putExtra("searchString",searchStr);
         intent.putExtra("receiverTag",receriver);
-        intent.putExtra("searchIdx",rand);
-        rand++;
-        if(rand>2) rand = 0;
         if(getActivity()!=null)
             getActivity().getBaseContext().startService(intent);
     }
@@ -482,80 +554,15 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
             googleSearchTitle = resultData.getString("title");
         }
         if(googleSearchImgUrl!=null && googleSearchTitle!=null ){
-            onResume();
+            updateTopTwoCardsView();
         }
 
         Toast.makeText(frag1context,googleSearchImgUrl+googleSearchTitle , Toast.LENGTH_LONG).show();
         Log.i(TAG, "Link got!");
     }
+    /*----------------------------------------------------------------------------------------------*/
 
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        frag1View = inflater.inflate(R.layout.fragment_fragment1, container, false);
-        // Inflate the layout for this fragment
-        return frag1View;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        Log.i(TAG,"on attach Frag1");
-        frag1context = context;
-        staticGlobal.setValueModifiedListener(new staticGlobal.valueModifiedListener() {
-            // on setUserName
-            @Override
-            public void onModified_01() {
-                updateTopTwoCardsView();
-            }
-            // on setGoogleSearchImgUri
-            @Override
-            public void onModified_02(){
-                updateTopTwoCardsView();
-            }
-            // on setCityName
-            @Override
-            public void onModified_03(){
-                makeConnGoogle(locale.CityName);
-                staticGlobal.setGoogleSearchImgUrl(googleSearchImgUrl);
-            }
-        });
-
-        if(staticGlobal.getUserName()==null){
-            createUserNameDlg();
-        }
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        locationManager.removeUpdates(this);
-        mListener = null;
-    }
-
+    /*---------------------------------create user name input box-----------------------------------*/
     private void createUserNameDlg(){
         final EditText input = new EditText(frag1context);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -582,7 +589,9 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
                 });
         builder.show();
     }
+    /*----------------------------------------------------------------------------------------------*/
 
+    /*-------------------------------AsyncTask for downloading image--------------------------------*/
     // AsyncTask for downloading image to internal storage and get its Uri
     static class downloadToIntReturnUri extends AsyncTask<String, Void, Uri> {
         //public Uri resultUri;
@@ -639,11 +648,9 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
             staticGlobal.setGoogleSearchImgUri(result);
         }
     }
+    /*----------------------------------------------------------------------------------------------*/
 
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
-    }
-
+    /*----------------------Uri permission grant module after android M-----------------------------*/
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void grantUriPermission(Uri uri){
         getActivity().grantUriPermission(getActivity().getPackageName(), uri,
@@ -652,4 +659,5 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
                         Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         getActivity().getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }
+    /*----------------------------------------------------------------------------------------------*/
 }

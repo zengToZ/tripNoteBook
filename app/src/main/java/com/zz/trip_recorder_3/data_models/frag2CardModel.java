@@ -17,5 +17,6 @@ public class frag2CardModel {
     public Context context;
     public boolean doDelet = false;
     public boolean firstEver = false;
-    public boolean isFrag1 = false;
+    public boolean isFrag1 = false; // for card 1 in frag1
+    public boolean isStatic = false;
 }

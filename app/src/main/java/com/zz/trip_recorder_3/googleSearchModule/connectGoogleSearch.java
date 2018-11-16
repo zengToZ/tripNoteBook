@@ -16,7 +16,6 @@ public class connectGoogleSearch {
 
     private String httpResponse;
     private String searchString;
-    private int resultIdx=0;
     private String title;
     private String url;
     private boolean success;
@@ -29,9 +28,8 @@ public class connectGoogleSearch {
         return title;
     }
 
-    public connectGoogleSearch(String searchString, int resultIdx){
+    public connectGoogleSearch(String searchString){
         this.searchString = searchString;
-        this.resultIdx = resultIdx;
         this.httpResponse = callGoogleAPI(this.searchString);
         try {
             this.success = parseResponse(this.httpResponse);
@@ -57,7 +55,7 @@ public class connectGoogleSearch {
         Log.i(TAG, "parseResponse connectGoogleSearch");
         JSONObject json = new JSONObject(response);
         JSONArray items = json.getJSONArray("items");
-        JSONObject item = items.getJSONObject(resultIdx);
+        JSONObject item = items.getJSONObject(0);
         String title = item.getString("title");
         String resultUrl = item.getString("link");
         //JSONObject image = item.getJSONObject("image");

@@ -102,6 +102,40 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     private int versionCount = -1;
     private int currVerCount = -1;
 
+    /*---------------------------system default listeners-------------------------------------------*/
+    // to Confirm content saved before leaving
+    @Override
+    public void onBackPressed(){
+        createQuitDlg("Just a Second","Do you want to save the record you just type in?");
+    }
+
+    @Override
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    protected void onResume(){
+        Log.i(TAG,"on Resume editor");
+        super.onResume();
+        updateEditorView();
+        updateSaveWork();
+    }
+
+    @Override
+    protected void onStop(){
+        Log.i(TAG,"onStop editor");
+        super.onStop();
+    }
+
+    @Override
+    protected void onPause(){
+        Log.i(TAG,"on pause editor");
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "on Destroy editor");
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -318,8 +352,9 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         });
         Log.i(TAG, "onCreate complete");
     }
+    /*----------------------------------------------------------------------------------------------*/
 
-
+    /*----------------------update global view in editor, mapping, history mapping(save work)-----*/
     /*** update Linear layout View, after insertion and deletion ***/
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void updateEditorView(){
@@ -459,7 +494,9 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                 break;
         }
     }
+    /*----------------------------------------------------------------------------------------------*/
 
+    /*--------------------insert or delete mappings------------------------------------------------*/
     /**update all map when inserting views**/
     private void insertArrMap(int id){
         // move all items in all map forward by 1
@@ -505,7 +542,9 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
             }
         }
     }
+    /*----------------------------------------------------------------------------------------------*/
 
+    /*--------------------add text module-----------------------------------------------------*/
     /** 1. add text **/
     private EditText addText(boolean isEmpty, String itemContent){
         EditText newText = new EditText(Activity_Editor.this);
@@ -531,7 +570,9 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         Log.i(TAG, "New Text Box added as (global count) "+ Integer.toString(COUNT)+": ");
         return newText;
     }
+    /*----------------------------------------------------------------------------------------------*/
 
+    /*--------------------add image module including saving photo taken---------------------------*/
     /** 2. add images **/
     // Open camera
     private void dispatchTakePictureIntent() {
@@ -604,28 +645,6 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         }
         return newImg;
     }
-
-    /** 3. add audio **/
-
-    /** 4. add video **/
-
-    /**create separator for each view added**/
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private void createSeparator(LinearLayout linearLayout, final String itemName, int position){
-        // view separator, able to insert views
-        ImageView separator = new ImageView(Activity_Editor.this);
-        separator.setOnClickListener(new ImageView.OnClickListener(){
-            @Override
-            public void onClick(View v1) {
-                createDlgOnInsertion(itemName);
-            }
-        });
-        separator.setBackgroundResource(R.mipmap.separator);
-        separator.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        LinearLayout.LayoutParams slayout = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 40);
-        linearLayout.addView(separator, position, slayout);
-    }
-
     /**Detect clicks on bottom sheet selection**/
     public void onItemClicked(int position, String para){
         insertItemName = para;
@@ -640,7 +659,6 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                 break;
         }
     }
-
     // Receive result from startActivityForResult
     @Override
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -675,7 +693,29 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                 break;
         }
     }
+    /*----------------------------------------------------------------------------------------------*/
 
+    /** 3. add audio **/
+
+    /** 4. add video **/
+
+    /*------------------------create separator in between views, applying insertion function-------*/
+    /**create separator for each view added**/
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void createSeparator(LinearLayout linearLayout, final String itemName, int position){
+        // view separator, able to insert views
+        ImageView separator = new ImageView(Activity_Editor.this);
+        separator.setOnClickListener(new ImageView.OnClickListener(){
+            @Override
+            public void onClick(View v1) {
+                createDlgOnInsertion(itemName);
+            }
+        });
+        separator.setBackgroundResource(R.mipmap.separator);
+        separator.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        LinearLayout.LayoutParams slayout = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 40);
+        linearLayout.addView(separator, position, slayout);
+    }
     // create Insertion Selection Menu
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void createDlgOnInsertion(final String itemName){
@@ -703,7 +743,9 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         builder.create();
         builder.show();
     }
+    /*----------------------------------------------------------------------------------------------*/
 
+    /*------create quit alert box enabling saving and alert box for duplicate handling--------------*/
     // create quit alert box: save, leave without saving, cancel
     private void createQuitDlg(String title, String message){
         final AlertDialog alertDialog = new AlertDialog.Builder(this)
@@ -746,7 +788,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         alertDialog.show();
     }
 
-    // create ok-cancel alert box
+    // create ok-cancel alert box (used to detect duplicate date in the same trip package
     private void createAlertDlg(String title, String message, String Y, String N){
         final AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setCancelable(false)
@@ -777,6 +819,9 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
         });
         alertDialog.show();
     }
+    /*----------------------------------------------------------------------------------------------*/
+
+    /*-----------------------save module, to Json format--------------------------------------------*/
     // save the current lay out in Json file
     private void save(){
         EditText tv;
@@ -844,40 +889,9 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
             Log.i(TAG,e.toString());
         }
     }
+    /*----------------------------------------------------------------------------------------------*/
 
-    // to Confirm content saved before leaving
-    @Override
-    public void onBackPressed(){
-        createQuitDlg("Just a Second","Do you want to save the record you just type in?");
-    }
-
-    @Override
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    protected void onResume(){
-        Log.i(TAG,"on Resume editor");
-        super.onResume();
-        updateEditorView();
-        updateSaveWork();
-    }
-
-    @Override
-    protected void onStop(){
-        Log.i(TAG,"onStop editor");
-        super.onStop();
-    }
-
-    @Override
-    protected void onPause(){
-        Log.i(TAG,"on pause editor");
-        super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i(TAG, "on Destroy editor");
-    }
-
+    /*-----------------------Uri permission grant module after android M----------------------------*/
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void grantUriPermission(Uri uri){
         this.grantUriPermission(this.getPackageName(), uri,
@@ -886,6 +900,7 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
                         Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         this.getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }
+    /*----------------------------------------------------------------------------------------------*/
 
     // Add img to linear layout -- old method
 /*    private void addImg(String itemName){

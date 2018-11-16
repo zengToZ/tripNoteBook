@@ -41,6 +41,7 @@ public class frag2CardViewHolder extends RecyclerView.ViewHolder {
     public boolean doDelet;
     public boolean firstEver;
     public boolean isFrag1;
+    public boolean isStatic;
 
     private static String createNewTripName = Fragment1.locale.CityName+" "+staticGlobal.beautifulDate(null,true);
 
@@ -59,8 +60,9 @@ public class frag2CardViewHolder extends RecyclerView.ViewHolder {
         firstEver = m.firstEver;
         isFrag1 = m.isFrag1;
         hidden_bg = m.hidden_BG;
+        isStatic = m.isStatic;
 
-        if(hidden_bg==null){
+        if(!isStatic){
             if(!doDelet){
                 if(firstEver){
                     background.setOnClickListener(new ImageView.OnClickListener(){

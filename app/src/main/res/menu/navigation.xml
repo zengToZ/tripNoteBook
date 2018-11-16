@@ -3,7 +3,7 @@
 
     <item
         android:id="@+id/navigation_01"
-        android:icon="@drawable/ic_beach_access_black_24dp"
+        android:icon="@drawable/ic_place_black_24dp"
         android:title="@string/title_01" />
   
     <item

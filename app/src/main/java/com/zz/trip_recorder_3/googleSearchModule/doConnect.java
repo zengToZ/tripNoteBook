@@ -18,13 +18,11 @@ public class doConnect extends IntentService {
             // get receiverTag and searchString from MainActivity
             ResultReceiver resultReceiver = intent.getParcelableExtra("receiverTag");
             String searchStr;
-            int searchIdx=0;
             searchStr = intent.getStringExtra("searchString");
-            searchIdx = intent.getIntExtra("searchIdx",0);
 
             Log.i(TAG, "start search");
             if (!searchStr.equals("")){
-                connectGoogleSearch conn = new connectGoogleSearch(searchStr,searchIdx);
+                connectGoogleSearch conn = new connectGoogleSearch(searchStr);
                 // send data received back to MainActivity
                 Bundle bun = new Bundle();
                 bun.putString("receivedURL",conn.getUrl());

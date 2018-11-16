@@ -30,6 +30,8 @@ public class Activity_01 extends AppCompatActivity implements
 
     final private static int REQUEST_ALL = 0xa1;
 
+    private static int frag1OpenCount = 0;
+
     final private String[] PERMISSIONS = {
              android.Manifest.permission.INTERNET,
             android.Manifest.permission.CAMERA,
@@ -50,7 +52,8 @@ public class Activity_01 extends AppCompatActivity implements
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_01:
-                    Fragment1 fragment1 =  Fragment1.newInstance(null,null);
+                    frag1OpenCount++;
+                    Fragment1 fragment1 =  Fragment1.newInstance(Integer.toString(frag1OpenCount));
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_container,fragment1).commit();
                     return true;
                 case R.id.navigation_02:
@@ -101,7 +104,9 @@ public class Activity_01 extends AppCompatActivity implements
 
         final FragmentOnStartup fragmentOnStartup =  FragmentOnStartup.newInstance(null,null);
         getSupportFragmentManager().beginTransaction().add(R.id.main_container, fragmentOnStartup).commit();
-        final Fragment1 fragment1 =  Fragment1.newInstance(null,null);
+
+        frag1OpenCount++;
+        final Fragment1 fragment1 =  Fragment1.newInstance(Integer.toString(frag1OpenCount));
         getSupportFragmentManager().beginTransaction().add(R.id.main_container,fragment1).commit();
         getSupportFragmentManager().beginTransaction().hide(fragment1).commit();
         Timer timer = new Timer();

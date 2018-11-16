@@ -172,6 +172,7 @@ public class Fragment2 extends Fragment {
         }
     }
 
+    // create Alert popout box if first time in for setUserName
     private void createTypeNewNameDlg(){
         final EditText input = new EditText(frag2context);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
