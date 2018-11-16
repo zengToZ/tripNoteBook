@@ -571,9 +571,9 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
     }
     // Open gallery
     private void openGallery(){
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        //Intent intent = new Intent();
-        //intent.setAction(Intent.ACTION_GET_CONTENT);  /* another way to open Gallery*/
+        //Intent intent = new Intent(Intent.ACTION_PICK);
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        //intent.setAction();  /* another way to open Gallery*/
         intent.setType("image/*");
         startActivityForResult(Intent.createChooser(intent.setFlags(Intent
                 .FLAG_GRANT_READ_URI_PERMISSION), "Select Picture"), PICK_IMAGE);
@@ -830,6 +830,10 @@ public class Activity_Editor extends AppCompatActivity implements ItemList_img_c
             newJsonObject.put(unitID,new JSONObject(jsonStringer.toString()));
             if(!unit_bg.equals("")){
                 newJsonObject.put("trip_bg",unit_bg);
+            }
+            else{
+                if(newJsonObject.opt("trip_bg")!=null)
+                    newJsonObject.remove("trip_bg");
             }
             outputStream = openFileOutput(staticGlobal.getTripJsonName(parentID), Context.MODE_PRIVATE);
             outputStream.write(newJsonObject.toString().getBytes());

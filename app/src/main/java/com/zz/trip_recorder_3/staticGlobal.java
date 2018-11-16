@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.content.FileProvider;
 import android.util.JsonReader;
 import android.util.Log;
 
@@ -23,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -37,6 +37,9 @@ import static android.os.Environment.getExternalStoragePublicDirectory;
 public class staticGlobal {
     public static Context context;
     public static File fDir;
+
+    private static Uri GoogleSearchImgUri;
+    private static String GoogleSearchImgUrl;
 
     private static valueModifiedListener modifiedListener;
 
@@ -76,6 +79,24 @@ public class staticGlobal {
     public static JsonReader getjsonReader (Context context, String fileName)throws IOException{
         FileInputStream file = context.openFileInput(fileName);
         return new JsonReader(new InputStreamReader(new BufferedInputStream(file)));
+    }
+
+
+    public static void setGoogleSearchImgUri(Uri googleSearchImgUri){
+        GoogleSearchImgUri = googleSearchImgUri;
+        if(modifiedListener!=null) modifiedListener.onModified_02();
+    }
+
+    public static Uri getGoogleSearchImgUri() {
+        return GoogleSearchImgUri;
+    }
+
+    public static void setGoogleSearchImgUrl(String googleSearchImgUrl){
+        GoogleSearchImgUrl = googleSearchImgUrl;
+    }
+
+    public static String getGoogleSearchImgUrl() {
+        return GoogleSearchImgUrl;
     }
 
     public static String getTripJsonName(int tripID) {
@@ -232,7 +253,7 @@ public class staticGlobal {
         INI.setLineSeparator("|");
         INI.set("Global Setting","userName",s);
         INI.save();
-        if(modifiedListener != null) modifiedListener.onModified();
+        if(modifiedListener != null) modifiedListener.onModified_01();
     }
 
     public static String getUserName(){
@@ -245,6 +266,7 @@ public class staticGlobal {
         INI.setLineSeparator("|");
         INI.set("Global Setting","cityName",s);
         INI.save();
+        if(modifiedListener!=null) modifiedListener.onModified_03();
     }
 
     public static String getCityName(){
@@ -276,14 +298,14 @@ public class staticGlobal {
         return (String)INI.get("Global Setting","countryName");
     }
 
-    public static Uri getImageUrlWithAuthority(Context context, Uri uri) {
+    public static Uri getImageUrlWithAuthority(Context context, Uri uri){
         InputStream is = null;
-        OutputStream os = null;
+        //OutputStream os = null;
         if (uri.getAuthority() != null) {
             try {
                 is = context.getContentResolver().openInputStream(uri);
                 Bitmap bmp = BitmapFactory.decodeStream(is);
-                return writeToTempImageAndGetPathUri(context, bmp);
+                return writeToTempImageAndGetPathUri(context, bmp, uri.toString());
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }finally {
@@ -297,11 +319,31 @@ public class staticGlobal {
         return null;
     }
 
-    private static Uri writeToTempImageAndGetPathUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
+    private static Uri writeToTempImageAndGetPathUri(Context inContext, Bitmap inImage, String uriName) {
+        File file = new File(getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)+"/"+staticGlobal.imgFolder,
+                uriName.substring(uriName.length()-10,uriName.length())+".jpg");
+        if(!file.exists()){
+            try{
+                file.createNewFile();
+
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+                byte[] bitmapData = bytes.toByteArray();
+
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(bitmapData);
+                fos.flush();
+                fos.close();
+                bytes.flush();
+                bytes.close();
+            }catch (Exception e){
+                Log.i(TAG, "writeToTempImageAndGetPathUri: "+ e.toString());
+            }
+        }
+        Uri photoURI = FileProvider.getUriForFile(inContext,
+                "com.zz.trip_recorder_3.fileprovider",
+                file);  // saved to Pictures/tripNotebook
+        return photoURI;
     }
 
     public static boolean isGooglePlayServicesAvailable(Context context) {
@@ -309,7 +351,7 @@ public class staticGlobal {
         return status == ConnectionResult.SUCCESS;
     }
 
-    private void downloadFromURL(Context context, String url, String fileName) {
+    public static void downloadToExtFromURL(Context context, String url, String fileName) {
         Uri uri = Uri.parse(url);
         DownloadManager.Request request = new DownloadManager.Request(uri);
         //request.setTitle("");
@@ -327,7 +369,9 @@ public class staticGlobal {
     }
 
     public interface valueModifiedListener{
-        void onModified();
+        void onModified_01();
+        void onModified_02();
+        void onModified_03();
     }
 
 /*

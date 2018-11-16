@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -28,6 +29,7 @@ import com.zz.trip_recorder_3.staticGlobal;
 
 public class frag2CardViewHolder extends RecyclerView.ViewHolder {
     public ImageView background;
+    public Bitmap hidden_bg;
     public ImageView layer1;
     public TextView title;
     public TextView description;
@@ -56,78 +58,79 @@ public class frag2CardViewHolder extends RecyclerView.ViewHolder {
         doDelet = m.doDelet;
         firstEver = m.firstEver;
         isFrag1 = m.isFrag1;
+        hidden_bg = m.hidden_BG;
 
-        if(!doDelet){
-            if(firstEver){
-                background.setOnClickListener(new ImageView.OnClickListener(){
-                    @Override
-                    public void onClick(View v1) {
-                        createTypeNewNameDlg();
-                    }
-                });
-            }
-            else{
-                background.setOnClickListener(new ImageView.OnClickListener(){
-                    @Override
-                    public void onClick(View v1) {
-                        Intent intent = new Intent(v1.getContext(), Activity_Triplist.class);
-                        intent.putExtra("isNew",false);
-                        intent.putExtra("tripPackgeID",id); // tripPackgeID to Activity_Triplist
-                        v1.getContext().startActivity(intent);
-                    }
-                });
-                if(!isFrag1){
-                    background.setOnLongClickListener(new ImageView.OnLongClickListener() {
+        if(hidden_bg==null){
+            if(!doDelet){
+                if(firstEver){
+                    background.setOnClickListener(new ImageView.OnClickListener(){
                         @Override
-                        public boolean onLongClick(View v) {
-                            Fragment2 fragment2 = Fragment2.newInstance("doDel",null,-1);
-                            try{
-                                final FragmentTransaction transaction = ((FragmentActivity)context).getSupportFragmentManager().beginTransaction();
-                                transaction.replace(R.id.main_container, fragment2);
-                                transaction.addToBackStack(null);
-                                transaction.commit();
-                            }
-                            catch (Exception e){
-                                Log.i("thisOne",e.toString());
-                            }
-                            return true;
+                        public void onClick(View v1) {
+                            createTypeNewNameDlg();
                         }
                     });
                 }
+                else{
+                    background.setOnClickListener(new ImageView.OnClickListener(){
+                        @Override
+                        public void onClick(View v1) {
+                            Intent intent = new Intent(v1.getContext(), Activity_Triplist.class);
+                            intent.putExtra("isNew",false);
+                            intent.putExtra("tripPackgeID",id); // tripPackgeID to Activity_Triplist
+                            v1.getContext().startActivity(intent);
+                        }
+                    });
+                    if(!isFrag1){
+                        background.setOnLongClickListener(new ImageView.OnLongClickListener() {
+                            @Override
+                            public boolean onLongClick(View v) {
+                                Fragment2 fragment2 = Fragment2.newInstance("doDel",null,-1);
+                                try{
+                                    final FragmentTransaction transaction = ((FragmentActivity)context).getSupportFragmentManager().beginTransaction();
+                                    transaction.replace(R.id.main_container, fragment2);
+                                    transaction.addToBackStack(null);
+                                    transaction.commit();
+                                }
+                                catch (Exception e){
+                                    Log.i("thisOne",e.toString());
+                                }
+                                return true;
+                            }
+                        });
+                    }
+                }
+            }
+            else {
+                background.setOnClickListener(new ImageView.OnClickListener(){
+                    @Override
+                    public void onClick(View v1) {
+                        Fragment2 fragment2 = Fragment2.newInstance(null,"doneDel", id);
+                        try{
+                            final FragmentTransaction transaction = ((FragmentActivity)context).getSupportFragmentManager().beginTransaction();
+                            transaction.replace(R.id.main_container, fragment2);
+                            transaction.addToBackStack(null);
+                            transaction.commit();
+                        }
+                        catch (Exception e){
+                            Log.i("thisOne",e.toString());
+                        }
+                    }
+                });
+            }
+
+            if(edittoday){
+                editTodayClk.setOnClickListener(new TextView.OnClickListener(){
+                    @Override
+                    public void onClick(View v1) {
+                        Intent intent = new Intent(v1.getContext(), Activity_Editor.class);
+                        intent.putExtra("parentID",id);
+                        intent.putExtra("unitID",currUnitID);
+                        intent.putExtra("isEdit",true); // edit mode, need reload file
+                        v1.getContext().startActivity(intent);
+                    }
+                });
             }
         }
-        else {
-            background.setOnClickListener(new ImageView.OnClickListener(){
-                @Override
-                public void onClick(View v1) {
-                    Fragment2 fragment2 = Fragment2.newInstance(null,"doneDel", id);
-                    try{
-                        final FragmentTransaction transaction = ((FragmentActivity)context).getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.main_container, fragment2);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
-                    }
-                    catch (Exception e){
-                        Log.i("thisOne",e.toString());
-                    }
-                }
-            });
-        }
-
-        if(edittoday){
-            editTodayClk.setOnClickListener(new TextView.OnClickListener(){
-                @Override
-                public void onClick(View v1) {
-                    Intent intent = new Intent(v1.getContext(), Activity_Editor.class);
-                    intent.putExtra("parentID",id);
-                    intent.putExtra("unitID",currUnitID);
-                    intent.putExtra("isEdit",true); // edit mode, need reload file
-                    v1.getContext().startActivity(intent);
-                }
-            });
-        }
-
-
     }
 
     private void createTypeNewNameDlg(){

@@ -39,7 +39,7 @@ public class frag2CardAdapter extends RecyclerView.Adapter<frag2CardViewHolder> 
     public void onBindViewHolder(frag2CardViewHolder frag2CardViewHolder, int i) {
         frag2CardModel CM = frag2CardModelList.get(i);
         try {
-            if (CM.background != null) {
+            if (CM.background != null && CM.hidden_BG == null) {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), CM.background);
                 int w = bitmap.getWidth();
                 int h = bitmap.getHeight();
@@ -54,6 +54,10 @@ public class frag2CardAdapter extends RecyclerView.Adapter<frag2CardViewHolder> 
                 frag2CardViewHolder.background.setAlpha(180);
                 frag2CardViewHolder.background.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 Log.i("thisOne", "showing: " + CM.background.toString()+bitmap.toString());
+            }
+            else if(CM.hidden_BG!=null){
+                frag2CardViewHolder.background.setImageBitmap(CM.hidden_BG);
+                frag2CardViewHolder.background.setScaleType(ImageView.ScaleType.CENTER_CROP);
             }
             else{
                 frag2CardViewHolder.background.setImageResource(R.mipmap.umbrella);

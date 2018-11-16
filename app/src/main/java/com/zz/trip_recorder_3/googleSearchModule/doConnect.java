@@ -8,6 +8,7 @@ import android.util.Log;
 
 public class doConnect extends IntentService {
     private static final String TAG = "thisOne";
+    public static final int resultCode = 0xe1;
     public doConnect(){
         super("doConnect");
     }
@@ -28,7 +29,7 @@ public class doConnect extends IntentService {
                 Bundle bun = new Bundle();
                 bun.putString("receivedURL",conn.getUrl());
                 bun.putString("title",conn.getTitle());
-                resultReceiver.send(0,bun);
+                resultReceiver.send(resultCode,bun);
             }
         }catch (Exception e) {
             Log.i(TAG,"doConnect onHandleIntent:" + e.toString());

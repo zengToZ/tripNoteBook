@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -13,10 +15,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -47,7 +49,14 @@ import com.zz.trip_recorder_3.googleSearchModule.searchReceiver;
 
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -66,6 +75,8 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
     private View frag1View;
     private Context frag1context;
 
+    private int rand = 0;   // number to get google search index
+
     private static final int requestCode_1 = 0xfffa;
     private static final int requestCode_2 = 0xfffb;
 
@@ -74,10 +85,14 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
     private VideoView frag1Video;
 
     private searchReceiver receriver;
+    private boolean isStale = true;
+    //private String oldGoogleSearchImgUrl;
     private static String googleSearchImgUrl;
     private static String googleSearchTitle;
 
     private LocationManager locationManager;
+    private String cityName;
+    String showingTitle = "";
     public static localeModel locale;   // public because might use it in fragment 2
     private static Geocoder geocoder;
     private double latitude;
@@ -119,20 +134,18 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         super.onResume();
         Log.i(TAG,"on Resume Frag2");
         // locale service start on..
-        String cityName = staticGlobal.getCityName();
+        cityName = staticGlobal.getCityName();
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if (frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                     frag1context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
                 updateLocation();
-                if(cityName==null || !cityName.equals(locale.CityName))
+                if(cityName==null || !cityName.equals(locale.CityName)){
                     staticGlobal.setCityName(locale.CityName);
+                    cityName = staticGlobal.getCityName();
+                }
             }
         }
-        List<frag2CardModel> cardList = new ArrayList();
-        // showing just one card on current editing status
-        frag2CardModel m1 = new frag2CardModel();
-        frag2CardModel m2 = new frag2CardModel();
-        String showingTitle = "";
+
         if(staticGlobal.getUserName()!=null)
             showingTitle += "Hi, "+staticGlobal.getUserName();
         if(locale != null) {
@@ -148,18 +161,49 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
                 showingTitle += locale.Country;
             }
         }
+        updateTopTwoCardsView();
+
+        //googleSearchImgUrl = "https://fm.cnbc.com/applications/cnbc.com/resources/img/editorial/2018/03/14/105066394-GettyImages-498350103_1.1910x1000.jpg";
+        //rand = 0;
+
+        //getVideo(frag1View);
+
+    }
+
+    private void updateTopTwoCardsView(){
+        List<frag2CardModel> cardList = new ArrayList();
+        frag2CardModel m1 = new frag2CardModel();
+        frag2CardModel m2 = new frag2CardModel();
         m1.title = showingTitle;
         m1.context = frag1context;
         m1.isFrag1 = true;
+        m2.isFrag1 = true;
 
         if(cityName!=null){
-            makeConnGoogle(cityName);
-            if(googleSearchImgUrl!=null){
+            if(isStale){
+                makeConnGoogle(cityName);
+                isStale = false;
+            }
+            if(googleSearchImgUrl!=null && googleSearchImgUrl!=staticGlobal.getGoogleSearchImgUrl()){
+                staticGlobal.setGoogleSearchImgUrl(googleSearchImgUrl);
                 m2.title = googleSearchTitle;
-                m2.background = Uri.parse(googleSearchImgUrl);
+                downloadToIntReturnUri dlToUri = new downloadToIntReturnUri(frag1context);
+                String[] paras = {googleSearchImgUrl,"jpg","img",Integer.toString(rand)};
+                dlToUri.execute(paras);
             }
         }
-        m2.isFrag1 = true;
+
+        File file = new File(frag1context.getFilesDir(), "img_"+cityName+"_"+Integer.toString(rand)+".jpg");
+        if(file.exists()) {
+            try{
+                InputStream is = null;
+                is = frag1context.getContentResolver().openInputStream(Uri.fromFile(file));
+                Bitmap bmp = BitmapFactory.decodeStream(is);
+                m2.hidden_BG = bmp;
+            }catch (Exception e) {
+                Log.i(TAG, "XXXX:" + e.toString());
+            }
+        }
 
         int showID = staticGlobal.getCurrShowingTripID();
         String lastEditID = staticGlobal.getCurrEditorID();
@@ -171,6 +215,7 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
             m1.firstEver = true;
             m1.edittoday = false;
             cardList.add(m1);
+            cardList.add(m2);
         }
         else {
             String JsonContent = null;
@@ -208,9 +253,6 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
 
         RecyclerView.Adapter adapter = new frag2CardAdapter(cardList, this.getContext());
         recyclerView.setAdapter(adapter);
-
-        //getVideo(frag1View);
-
     }
 
     // update and get current location
@@ -344,7 +386,6 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {}
 
-
     private void updateMap() throws NullPointerException{
         FragmentManager fragmentManager = getFragmentManager();
         try{
@@ -422,21 +463,28 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
     }
 
     private void makeConnGoogle(String searchStr){
-        int rand = (int)(Math.random()*7);  // 7 is the lucky number =)
         receriver = new searchReceiver(new Handler());
         receriver.setmReceiver(this);
         Intent intent = new Intent(frag1context, doConnect.class);
         intent.putExtra("searchString",searchStr);
         intent.putExtra("receiverTag",receriver);
-        intent.putExtra("searchIdx",0);
+        intent.putExtra("searchIdx",rand);
+        rand++;
+        if(rand>2) rand = 0;
         if(getActivity()!=null)
             getActivity().getBaseContext().startService(intent);
     }
 
     @Override
     public void onReceiveResult(int resultCode, Bundle resultData) {
-        googleSearchImgUrl = resultData.getString("receivedURL");
-        googleSearchTitle = resultData.getString("title");
+        if(resultCode == doConnect.resultCode){
+            googleSearchImgUrl = resultData.getString("receivedURL");
+            googleSearchTitle = resultData.getString("title");
+        }
+        if(googleSearchImgUrl!=null && googleSearchTitle!=null ){
+            onResume();
+        }
+
         Toast.makeText(frag1context,googleSearchImgUrl+googleSearchTitle , Toast.LENGTH_LONG).show();
         Log.i(TAG, "Link got!");
     }
@@ -472,9 +520,21 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         Log.i(TAG,"on attach Frag1");
         frag1context = context;
         staticGlobal.setValueModifiedListener(new staticGlobal.valueModifiedListener() {
+            // on setUserName
             @Override
-            public void onModified() {
-                onResume();
+            public void onModified_01() {
+                updateTopTwoCardsView();
+            }
+            // on setGoogleSearchImgUri
+            @Override
+            public void onModified_02(){
+                updateTopTwoCardsView();
+            }
+            // on setCityName
+            @Override
+            public void onModified_03(){
+                makeConnGoogle(locale.CityName);
+                staticGlobal.setGoogleSearchImgUrl(googleSearchImgUrl);
             }
         });
 
@@ -523,18 +583,64 @@ public class Fragment1 extends Fragment implements LocationListener,OnMapReadyCa
         builder.show();
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    // AsyncTask for downloading image to internal storage and get its Uri
+    static class downloadToIntReturnUri extends AsyncTask<String, Void, Uri> {
+        //public Uri resultUri;
+        // String[0,1,2,3] : UrlStr, ext, fileType, id
+        private WeakReference<Context> activityReference;
+        // only retain a weak reference to the activity
+        downloadToIntReturnUri(Context pass_context) {
+            activityReference = new WeakReference<>(pass_context);
+        }
+
+        protected Uri doInBackground(String... str){
+            Context context = activityReference.get();
+            InputStream in = null;
+            ByteArrayOutputStream out = null;
+            FileOutputStream fos = null;
+            String fileName = str[2] + "_" +
+                    staticGlobal.getCityName() + "_" +
+                    str[3] + "." + str[1];
+            File ff = new File(context.getFilesDir(), fileName);
+            if(ff.exists()) return staticGlobal.getGoogleSearchImgUri();
+            try{
+                URL url = new URL(str[0]);
+                in = new BufferedInputStream(url.openStream());
+                out = new ByteArrayOutputStream();
+                byte[] buf = new byte[2048];
+                int n = 0;
+                while (-1!=(n=in.read(buf)))
+                {
+                    out.write(buf, 0, n);
+                }
+                byte[] response = out.toByteArray();
+                fos = context.openFileOutput(fileName, Context.MODE_PRIVATE);
+                fos.write(response);
+            }catch (Exception e){
+                Log.i(TAG,"downloadToIntReturnUri(1) " + e.toString());
+            }
+            finally {
+                try{
+                    if(out!=null)
+                        out.close();
+                    if(in != null)
+                        in.close();
+                    if(fos != null)
+                        fos.close();
+                }catch (Exception e){
+                    Log.i(TAG,"downloadToIntReturnUri(2) " + e.toString());
+                }
+            }
+            File file = new File(context.getFilesDir(), fileName);
+            return Uri.fromFile(file);
+        }
+        protected void onPostExecute(Uri result) {
+            //this.resultUri = result;
+            staticGlobal.setGoogleSearchImgUri(result);
+        }
+    }
+
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
 

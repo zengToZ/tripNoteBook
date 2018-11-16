@@ -1,11 +1,13 @@
 package com.zz.trip_recorder_3.data_models;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.widget.ImageView;
 
 public class frag2CardModel {
     public Uri background;
+    public Bitmap hidden_BG;
     public String title;
     public String description;
     public String editToday;

@@ -1,10 +1,7 @@
 package com.zz.trip_recorder_3;
 
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -16,13 +13,8 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.io.File;
 import java.util.Timer;
@@ -37,8 +29,6 @@ public class Activity_01 extends AppCompatActivity implements
         FragmentOnStartup.OnFragmentInteractionListener{
 
     final private static int REQUEST_ALL = 0xa1;
-
-    final private String APP_NAME = "zz_trip_notebook";
 
     final private String[] PERMISSIONS = {
              android.Manifest.permission.INTERNET,
@@ -84,6 +74,7 @@ public class Activity_01 extends AppCompatActivity implements
         staticGlobal.fDir = getApplication().getBaseContext().getFilesDir();
         staticGlobal.context = this;
 
+        String APP_NAME = "zz_trip_notebook";
         SharedPreferences settings = getSharedPreferences(APP_NAME, 0);
 
         if (settings.getBoolean("is_first_run", true)) {
@@ -163,7 +154,7 @@ public class Activity_01 extends AppCompatActivity implements
         // by default
     }
 
-    private void cleanUp(){
+    /*private void cleanUp(){
         File file;
         for(int i=0;i<1024;i++) {
             file = new File(getApplication().getBaseContext().getFilesDir(), staticGlobal.getTripJsonName(i));
@@ -174,5 +165,5 @@ public class Activity_01 extends AppCompatActivity implements
         }catch (Exception e){
             e.printStackTrace();
         }
-    }
+    }*/
 }
