@@ -8,7 +8,7 @@ import android.util.Log;
 
 public class doConnect extends IntentService {
     private static final String TAG = "thisOne";
-    public static final int resultCode = 0xe1;
+    public static final int resultCodeGoogle = 0xe1;
     public doConnect(){
         super("doConnect");
     }
@@ -25,9 +25,9 @@ public class doConnect extends IntentService {
                 connectGoogleSearch conn = new connectGoogleSearch(searchStr);
                 // send data received back to MainActivity
                 Bundle bun = new Bundle();
-                bun.putString("receivedURL",conn.getUrl());
-                bun.putString("title",conn.getTitle());
-                resultReceiver.send(resultCode,bun);
+                bun.putStringArray("receivedURL",conn.getUrl());
+                bun.putStringArray("title",conn.getTitle());
+                resultReceiver.send(resultCodeGoogle,bun);
             }
         }catch (Exception e) {
             Log.i(TAG,"doConnect onHandleIntent:" + e.toString());

@@ -1,17 +1,25 @@
 package com.zz.trip_recorder_3;
 
+import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
+import android.util.DisplayMetrics;
 import android.util.JsonReader;
+import android.util.JsonToken;
 import android.util.Log;
+import android.view.View;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -27,10 +35,14 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.zz.trip_recorder_3.tools.iniHelper_tools;
+
+import org.json.JSONObject;
+import org.json.JSONStringer;
 
 import static android.os.Environment.getExternalStoragePublicDirectory;
 
@@ -38,8 +50,9 @@ public class staticGlobal {
     public static Context context;
     public static File fDir;
 
-    private static Uri GoogleSearchImgUri;
-    private static String GoogleSearchImgUrl;
+    public final static int MAX_CITY_IMG_DL = 10;
+    private final static String CITY_JSON_PATH = "CITY_JSON.json";
+    public final static String APP_NAME = "zz_trip_notebook";
 
     private static valueModifiedListener modifiedListener;
 
@@ -79,24 +92,6 @@ public class staticGlobal {
     public static JsonReader getjsonReader (Context context, String fileName)throws IOException{
         FileInputStream file = context.openFileInput(fileName);
         return new JsonReader(new InputStreamReader(new BufferedInputStream(file)));
-    }
-
-
-    public static void setGoogleSearchImgUri(Uri googleSearchImgUri){
-        GoogleSearchImgUri = googleSearchImgUri;
-        if(modifiedListener!=null) modifiedListener.onModified_02();
-    }
-
-    public static Uri getGoogleSearchImgUri() {
-        return GoogleSearchImgUri;
-    }
-
-    public static void setGoogleSearchImgUrl(String googleSearchImgUrl){
-        GoogleSearchImgUrl = googleSearchImgUrl;
-    }
-
-    public static String getGoogleSearchImgUrl() {
-        return GoogleSearchImgUrl;
     }
 
     public static String getTripJsonName(int tripID) {
@@ -266,7 +261,6 @@ public class staticGlobal {
         INI.setLineSeparator("|");
         INI.set("Global Setting","cityName",s);
         INI.save();
-        if(modifiedListener!=null) modifiedListener.onModified_03();
     }
 
     public static String getCityName(){
@@ -364,14 +358,124 @@ public class staticGlobal {
         manager.enqueue(request);
     }
 
+    public static void createCityJson(Context context){
+        JSONObject newJson = new JSONObject();
+        File file = new File(context.getApplicationContext().getFilesDir(), staticGlobal.CITY_JSON_PATH);
+        try {
+            if(!file.exists()){
+                FileOutputStream outputStream = context.openFileOutput(staticGlobal.CITY_JSON_PATH, Context.MODE_PRIVATE);
+                outputStream.write(newJson.toString().getBytes());
+                Log.i(TAG,newJson.toString());
+                outputStream.close();
+            }
+        }catch (Exception e){
+            Log.i(TAG,"createCityJson: "+e.toString());
+        }
+    }
+
+    public static void writeCityJson(Context context, String cityName, String[] inputStr){
+        try{
+            String jsonStr = staticGlobal.getJson(context.getApplicationContext(), staticGlobal.CITY_JSON_PATH);
+            JSONObject jsonObject = new JSONObject(jsonStr);
+            JSONStringer JsonStringer = new JSONStringer();
+            JsonStringer.object();
+            for(int i=0; i<staticGlobal.MAX_CITY_IMG_DL; i++){
+                JsonStringer.key(Integer.toString(i));
+                JsonStringer.value(inputStr[i]);
+            }
+            JsonStringer.endObject();
+            jsonObject.put(cityName,new JSONObject(JsonStringer.toString()));
+
+            FileOutputStream outputStream = context.openFileOutput(staticGlobal.CITY_JSON_PATH, Context.MODE_PRIVATE);
+            outputStream.write(jsonObject.toString().getBytes());
+        }catch (Exception e){
+            Log.i(TAG,"writeCityJson: "+e.toString());
+        }
+    }
+
+    public static String[] readCityJson(Context context, String cityName){
+        String[] output = new String[staticGlobal.MAX_CITY_IMG_DL];
+        try{
+            JsonReader jsonReader = staticGlobal.getjsonReader(context.getApplicationContext(), staticGlobal.CITY_JSON_PATH);
+            String CityName="";
+            int i=0;
+            jsonReader.beginObject();
+            while(jsonReader.hasNext()) {
+                JsonToken nextToken = jsonReader.peek();
+                if(JsonToken.NAME.equals(nextToken)) {
+                    CityName = jsonReader.nextName();
+                    Log.i(TAG, CityName);
+                }
+                else if(JsonToken.BEGIN_OBJECT.equals(nextToken)){
+                    jsonReader.beginObject();
+                    if(!CityName.equals(cityName)){
+                        jsonReader.skipValue();
+                        continue;
+                    }
+                    while (jsonReader.hasNext()) {
+                        JsonToken innerToken = jsonReader.peek();
+                        if(JsonToken.NAME.equals(innerToken)){
+                            i = Integer.parseInt(jsonReader.nextName());
+                        }
+                        else if(JsonToken.STRING.equals(innerToken)){
+                            output[i] =  jsonReader.nextString();
+                            Log.i(TAG,output[i]);
+                        }
+                        else {
+                            jsonReader.skipValue();
+                        }
+                    }
+                }
+                else{
+                    jsonReader.skipValue();
+                }
+            }
+
+        }catch (Exception e){
+            Log.i(TAG,"readCityJson: "+e.toString());
+        }
+            return output;
+    }
+
+    public static Locale getAppLocale(Context context){
+        final SharedPreferences settings = context.getApplicationContext().getSharedPreferences(staticGlobal.APP_NAME, 0);
+        String checked = settings.getString("langSet", "EN");
+        Resources resources = context.getResources();
+        Configuration configuration = resources.getConfiguration();
+        DisplayMetrics displayMetrics = resources.getDisplayMetrics();
+        if(checked == "EN"){
+            setAppLocale(resources,configuration,Locale.US,context,displayMetrics);
+            return Locale.US;
+        }
+        else if(checked == "CH"){
+            setAppLocale(resources,configuration,Locale.US,context,displayMetrics);
+            return Locale.CHINA;
+        }
+        else{
+            setAppLocale(resources,configuration,Locale.US,context,displayMetrics);
+            return Locale.US;
+        }
+    }
+    private static void setAppLocale(Resources resources, Configuration configuration, Locale locale, Context context, DisplayMetrics displayMetrics){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
+            configuration.setLocale(locale);
+            resources.updateConfiguration(configuration,displayMetrics);
+        } else{
+            configuration.locale=locale;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            context.getApplicationContext().createConfigurationContext(configuration);
+        } else {
+            resources.updateConfiguration(configuration,displayMetrics);
+        }
+    }
+
     public static void setValueModifiedListener(valueModifiedListener valueModifiedListener){
         modifiedListener = valueModifiedListener;
     }
 
     public interface valueModifiedListener{
         void onModified_01();
-        void onModified_02();
-        void onModified_03();
     }
 
 /*

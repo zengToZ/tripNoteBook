@@ -2,6 +2,7 @@ package com.zz.trip_recorder_3.googleSearchModule;
 
 import android.util.Log;
 
+import com.zz.trip_recorder_3.staticGlobal;
 import com.zz.trip_recorder_3.tools.HttpGetter_tools;
 
 import org.json.JSONArray;
@@ -16,15 +17,15 @@ public class connectGoogleSearch {
 
     private String httpResponse;
     private String searchString;
-    private String title;
-    private String url;
+    private String[] title = new String[staticGlobal.MAX_CITY_IMG_DL];
+    private String[] url = new String[staticGlobal.MAX_CITY_IMG_DL];
     private boolean success;
 
-    public String getUrl() {
+    public String[] getUrl() {
         return url;
     }
 
-    public String getTitle() {
+    public String[] getTitle() {
         return title;
     }
 
@@ -52,20 +53,23 @@ public class connectGoogleSearch {
     }
 
     private boolean parseResponse(String response) throws JSONException{
+        boolean noGet = true;
         Log.i(TAG, "parseResponse connectGoogleSearch");
         JSONObject json = new JSONObject(response);
         JSONArray items = json.getJSONArray("items");
-        JSONObject item = items.getJSONObject(0);
-        String title = item.getString("title");
-        String resultUrl = item.getString("link");
-        //JSONObject image = item.getJSONObject("image");
 
+        for(int i=0;i<10;i++){
+            JSONObject item = items.getJSONObject(i);
+            String title = item.getString("title");
+            String resultUrl = item.getString("link");
+            //JSONObject image = item.getJSONObject("image");
 
-        if(resultUrl!=null && title!=null){
-            this.url = resultUrl;
-            this.title = title;
-            return true;
+            if(resultUrl!=null && title!=null){
+                this.url[i] = resultUrl;
+                this.title[i] = title;
+                noGet = false;
+            }
         }
-        return false;
+        return noGet;
     }
 }

@@ -2,19 +2,30 @@ package com.zz.trip_recorder_3;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.zz.trip_recorder_3.ExtraViewer.AboutViewer;
+import com.zz.trip_recorder_3.ExtraViewer.Setting_Viewer;
 
 import java.io.File;
 import java.util.Timer;
@@ -29,6 +40,8 @@ public class Activity_01 extends AppCompatActivity implements
         FragmentOnStartup.OnFragmentInteractionListener{
 
     final private static int REQUEST_ALL = 0xa1;
+
+    private static boolean isDrawerOpen = false;
 
     private static int frag1OpenCount = 0;
 
@@ -69,23 +82,27 @@ public class Activity_01 extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActionBar actionBar = getSupportActionBar();
-        if(actionBar!=null)
-            actionBar.hide();
+        if(actionBar!=null){
+            actionBar.setTitle("Trip Notebook");
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+            //actionBar.hide();
         setContentView(R.layout.activity_01);
 
         // for initialising
         staticGlobal.fDir = getApplication().getBaseContext().getFilesDir();
         staticGlobal.context = this;
 
-        String APP_NAME = "zz_trip_notebook";
-        SharedPreferences settings = getSharedPreferences(APP_NAME, 0);
+
+        SharedPreferences settings = getSharedPreferences(staticGlobal.APP_NAME, 0);
 
         if (settings.getBoolean("is_first_run", true)) {
             //cleanUp();
             staticGlobal.initializeIniFile();
             settings.edit().putBoolean("is_first_run", false).apply();
         }
-
+        staticGlobal.createCityJson(Activity_01.this);
         /*---check all permissions--*/
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if(!hasPermissions(this, PERMISSIONS)){
@@ -105,6 +122,24 @@ public class Activity_01 extends AppCompatActivity implements
         final FragmentOnStartup fragmentOnStartup =  FragmentOnStartup.newInstance(null,null);
         getSupportFragmentManager().beginTransaction().add(R.id.main_container, fragmentOnStartup).commit();
 
+        final NavigationView sideNavigationView = (NavigationView)findViewById(R.id.nav_view);
+        sideNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                switch (menuItem.getItemId()){
+                    case R.id.drawer_navigation_01:
+                        Intent intent1 = new Intent(Activity_01.this,Setting_Viewer.class);
+                        startActivity(intent1);
+                        return true;
+                    case R.id.drawer_navigation_02:
+                        Intent intent2 = new Intent(Activity_01.this,AboutViewer.class);
+                        startActivity(intent2);
+                        return true;
+                }
+                return false;
+            }
+        });
+
         frag1OpenCount++;
         final Fragment1 fragment1 =  Fragment1.newInstance(Integer.toString(frag1OpenCount));
         getSupportFragmentManager().beginTransaction().add(R.id.main_container,fragment1).commit();
@@ -117,6 +152,22 @@ public class Activity_01 extends AppCompatActivity implements
                 getSupportFragmentManager().beginTransaction().show(fragment1).commit();
             }
         },2000);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        final DrawerLayout drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                if(isDrawerOpen)
+                    drawerLayout.closeDrawer(Gravity.LEFT);
+                else
+                    drawerLayout.openDrawer(Gravity.LEFT);
+                isDrawerOpen = !isDrawerOpen;
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     // check permission since Android M version
@@ -134,6 +185,7 @@ public class Activity_01 extends AppCompatActivity implements
     @Override
     protected void onResume(){
         Log.i(TAG,"on Resume Act1");
+        FullScreencall();
         super.onResume();
     }
 
@@ -157,6 +209,19 @@ public class Activity_01 extends AppCompatActivity implements
 
     public void onFragmentInteraction(Uri uri){
         // by default
+    }
+
+    public void FullScreencall() {
+        if(Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) { // lower api
+            View v = getWindow().getDecorView();
+            v.setSystemUiVisibility(View.GONE);
+        } else if(Build.VERSION.SDK_INT >= 19) {
+            //for new api versions.
+            View decorView = getWindow().getDecorView();
+            int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    |View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            decorView.setSystemUiVisibility(uiOptions);
+        }
     }
 
     /*private void cleanUp(){

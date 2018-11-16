@@ -2,6 +2,7 @@ package com.zz.trip_recorder_3.view_holders;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import com.zz.trip_recorder_3.Activity_01;
 import com.zz.trip_recorder_3.Activity_Editor;
 import com.zz.trip_recorder_3.Activity_Triplist;
 import com.zz.trip_recorder_3.Activity_Viewer;
+import com.zz.trip_recorder_3.ExtraViewer.YouTubeViewer;
 import com.zz.trip_recorder_3.Fragment1;
 import com.zz.trip_recorder_3.Fragment2;
 import com.zz.trip_recorder_3.R;
@@ -43,7 +45,7 @@ public class frag2CardViewHolder extends RecyclerView.ViewHolder {
     public boolean isFrag1;
     public boolean isStatic;
 
-    private static String createNewTripName = Fragment1.locale.CityName+" "+staticGlobal.beautifulDate(null,true);
+    private static String createNewTripName = "New Trip";
 
     public frag2CardViewHolder(View v, frag2CardModel m){
         super(v);
@@ -61,6 +63,10 @@ public class frag2CardViewHolder extends RecyclerView.ViewHolder {
         isFrag1 = m.isFrag1;
         hidden_bg = m.hidden_BG;
         isStatic = m.isStatic;
+
+        if(staticGlobal.getCityName()!=null){
+            createNewTripName = staticGlobal.getCityName()+" "+staticGlobal.beautifulDate(null,true);
+        }
 
         if(!isStatic){
             if(!doDelet){
@@ -132,6 +138,16 @@ public class frag2CardViewHolder extends RecyclerView.ViewHolder {
                     }
                 });
             }
+        }else{
+            background.setOnClickListener(new ImageView.OnClickListener(){
+                @Override
+                public void onClick(View v1) {
+                    Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+                    String term = staticGlobal.getCityName();   // term which you want to search for
+                    intent.putExtra(SearchManager.QUERY, term);
+                    v1.getContext().startActivity(intent);
+                }
+            });
         }
     }
 
@@ -140,6 +156,7 @@ public class frag2CardViewHolder extends RecyclerView.ViewHolder {
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setText(createNewTripName);
         input.setSelectAllOnFocus(true);
+        input.requestFocus();
         final AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setTitle("Give a name for the new trip")
                 .setView(input)

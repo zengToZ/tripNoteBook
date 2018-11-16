@@ -39,6 +39,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -64,9 +65,18 @@
             android:theme="@style/DayNight" />
         <activity android:name=".ExtraViewer.ImageViewer" />
 
-        <service android:name=".googleSearchModule.doConnect"
-            android:exported="false"></service>
+        <activity
+            android:name=".ExtraViewer.YouTubeViewer" />
 
+        <service
+            android:name=".googleSearchModule.doConnect"
+            android:exported="false" />
+        <service
+            android:name=".youtubeSearchModule.doConnectYouTube"
+            android:exported="false" />
+
+        <activity android:name=".ExtraViewer.AboutViewer" />
+        <activity android:name=".ExtraViewer.Setting_Viewer"></activity>
     </application>
 
 </manifest>
