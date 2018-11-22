@@ -11,10 +11,16 @@
 
     <style name="light_material" parent="android:Theme.Material.Light" />
 
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@drawable/splashing</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
     <style name="DayNight" parent="Theme.AppCompat.DayNight">
         <item name="android:navigationBarColor">@color/Grey_02</item>
         <item name="android:statusBarColor">@color/Grey_02</item>
         <item name="colorPrimaryDark">@color/Grey_02</item>
-        <item name="android:colorBackground">@color/white</item>
+       <!-- <item name="android:windowFullscreen">true</item>-->
+       <item name="android:colorBackground">@color/white</item>
     </style>
 </resources>

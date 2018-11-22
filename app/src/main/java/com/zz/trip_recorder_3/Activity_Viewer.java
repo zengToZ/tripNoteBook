@@ -16,6 +16,7 @@ import android.util.JsonToken;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -149,6 +150,17 @@ public class Activity_Viewer extends AppCompatActivity {
         LinearLayout.LayoutParams thislayout = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
         linearLayout.addView(btn,-1,thislayout);
 
+        Button btn2 = new Button(this);
+        btn2.setBackgroundResource(android.R.color.transparent);
+        btn2.setText("Generate PDF");
+        btn2.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v1) {
+            }
+        });
+        LinearLayout.LayoutParams thislayout2 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+        linearLayout.addView(btn2,-1,thislayout2);
+
         // add some space between views
         Space space = new Space(this);
         space.setMinimumHeight(100);
@@ -224,6 +236,16 @@ public class Activity_Viewer extends AppCompatActivity {
             }
         }catch (Exception e){
             Toast.makeText(this, "Error:" + e.toString(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void generatePDF(){
+        if(linearLayout!=null){
+            ViewTreeObserver VTO = linearLayout.getViewTreeObserver();
+
+        }
+        else {
+            Toast.makeText(this, "cannot generate pdf", Toast.LENGTH_LONG).show();
         }
     }
 

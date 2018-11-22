@@ -36,8 +36,7 @@ import static android.os.Environment.getExternalStoragePublicDirectory;
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class Activity_01 extends AppCompatActivity implements
         Fragment1.OnFragmentInteractionListener,
-        Fragment2.OnFragmentInteractionListener,
-        FragmentOnStartup.OnFragmentInteractionListener{
+        Fragment2.OnFragmentInteractionListener{
 
     final private static int REQUEST_ALL = 0xa1;
 
@@ -46,7 +45,7 @@ public class Activity_01 extends AppCompatActivity implements
     private static int frag1OpenCount = 0;
 
     final private String[] PERMISSIONS = {
-             android.Manifest.permission.INTERNET,
+            android.Manifest.permission.INTERNET,
             android.Manifest.permission.CAMERA,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
             android.Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -119,8 +118,8 @@ public class Activity_01 extends AppCompatActivity implements
         final BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        final FragmentOnStartup fragmentOnStartup =  FragmentOnStartup.newInstance(null,null);
-        getSupportFragmentManager().beginTransaction().add(R.id.main_container, fragmentOnStartup).commit();
+        /*final FragmentOnStartup fragmentOnStartup =  FragmentOnStartup.newInstance(null,null);
+        getSupportFragmentManager().beginTransaction().add(R.id.main_container, fragmentOnStartup).commit();*/
 
         final NavigationView sideNavigationView = (NavigationView)findViewById(R.id.nav_view);
         sideNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -140,8 +139,8 @@ public class Activity_01 extends AppCompatActivity implements
             }
         });
 
-        frag1OpenCount++;
-        final Fragment1 fragment1 =  Fragment1.newInstance(Integer.toString(frag1OpenCount));
+
+        /*final Fragment1 fragment1 =  Fragment1.newInstance(Integer.toString(frag1OpenCount));
         getSupportFragmentManager().beginTransaction().add(R.id.main_container,fragment1).commit();
         getSupportFragmentManager().beginTransaction().hide(fragment1).commit();
         Timer timer = new Timer();
@@ -151,7 +150,7 @@ public class Activity_01 extends AppCompatActivity implements
                 getSupportFragmentManager().beginTransaction().remove(fragmentOnStartup).commit();
                 getSupportFragmentManager().beginTransaction().show(fragment1).commit();
             }
-        },2000);
+        },2000);*/
     }
 
     @Override
@@ -185,7 +184,9 @@ public class Activity_01 extends AppCompatActivity implements
     @Override
     protected void onResume(){
         Log.i(TAG,"on Resume Act1");
-        FullScreencall();
+        frag1OpenCount++;
+        getSupportFragmentManager().beginTransaction().add(R.id.main_container,Fragment1.newInstance(Integer.toString(frag1OpenCount))).commit();
+        //FullScreencall();
         super.onResume();
     }
 
@@ -211,7 +212,7 @@ public class Activity_01 extends AppCompatActivity implements
         // by default
     }
 
-    public void FullScreencall() {
+    /*public void FullScreencall() {
         if(Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) { // lower api
             View v = getWindow().getDecorView();
             v.setSystemUiVisibility(View.GONE);
@@ -219,10 +220,10 @@ public class Activity_01 extends AppCompatActivity implements
             //for new api versions.
             View decorView = getWindow().getDecorView();
             int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    |View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                    |View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
             decorView.setSystemUiVisibility(uiOptions);
         }
-    }
+    }*/
 
     /*private void cleanUp(){
         File file;
